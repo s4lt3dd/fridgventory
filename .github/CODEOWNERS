@@ -1,0 +1,13 @@
+# Global owner
+* @fridgecheck-team
+
+# Backend
+/backend/ @fridgecheck-backend
+
+# Frontend
+/frontend/ @fridgecheck-frontend
+
+# Infrastructure
+/terraform/ @fridgecheck-infra
+/docker/ @fridgecheck-infra
+/.github/ @fridgecheck-infra
