@@ -1,0 +1,19 @@
+{
+  "name": "FridgeCheck",
+  "short_name": "FridgeCheck",
+  "description": "Track your food inventory and reduce waste",
+  "theme_color": "#10b981",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "icons/icon-placeholder.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
