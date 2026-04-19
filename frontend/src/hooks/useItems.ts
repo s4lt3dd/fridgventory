@@ -2,7 +2,6 @@ import {
   useQuery,
   useMutation,
   useQueryClient,
-  UseQueryResult,
 } from '@tanstack/react-query';
 import { itemsApi } from '@/api/items';
 import { PantryItem, ItemCreate, GroupedItems } from '@/types';
@@ -13,11 +12,7 @@ const itemKeys = {
   expiring: (householdId: string) => ['items', householdId, 'expiring'] as const,
 };
 
-interface UseItemsResult extends UseQueryResult<PantryItem[], Error> {
-  grouped: GroupedItems;
-}
-
-export function useItems(householdId: string): UseItemsResult {
+export function useItems(householdId: string) {
   const result = useQuery({
     queryKey: itemKeys.all(householdId),
     queryFn: () => itemsApi.list(householdId),
@@ -25,7 +20,7 @@ export function useItems(householdId: string): UseItemsResult {
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 
-  const grouped = groupItemsByUrgency(result.data ?? []);
+  const grouped: GroupedItems = groupItemsByUrgency(result.data ?? []);
 
   return { ...result, grouped };
 }

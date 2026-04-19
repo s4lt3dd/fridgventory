@@ -86,7 +86,7 @@ export default function RecipesPage() {
               )}
               {recipe.matched_ingredients && recipe.matched_ingredients.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
-                  {recipe.matched_ingredients.map((ing) => (
+                  {recipe.matched_ingredients.map((ing: string) => (
                     <span
                       key={ing}
                       className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700"

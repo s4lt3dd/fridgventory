@@ -8,7 +8,7 @@ import Modal from '@/components/ui/Modal';
 import Card from '@/components/ui/Card';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import type { PantryItem, ItemCreate } from '@/types';
-import { useAddItem, useUpdateItem, useDeleteItem } from '@/hooks/useItems';
+import { useUpdateItem, useDeleteItem } from '@/hooks/useItems';
 
 export default function DashboardPage() {
   const { data: households, isLoading: householdsLoading } = useHouseholds();
@@ -17,7 +17,6 @@ export default function DashboardPage() {
 
   const householdId = selectedHouseholdId || households?.[0]?.id || '';
   const { grouped, isLoading: itemsLoading } = useItems(householdId);
-  const addItem = useAddItem(householdId);
   const updateItem = useUpdateItem(householdId);
   const deleteItem = useDeleteItem(householdId);
 

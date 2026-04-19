@@ -63,9 +63,11 @@ export interface Recipe {
   id: string;
   name: string;
   thumbnail?: string;
+  thumbnail_url?: string;
   category?: string;
   instructions?: string;
   ingredients: string[];
+  matched_ingredients?: string[];
   source_url?: string;
 }
 
