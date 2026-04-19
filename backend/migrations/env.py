@@ -25,9 +25,11 @@ if config.config_file_name is not None:
 target_metadata = Base.metadata
 
 # Override sqlalchemy.url with the DATABASE_URL environment variable
+# Convert to async driver URL for asyncpg
 database_url = os.environ.get("DATABASE_URL", "")
 if database_url:
-    config.set_main_option("sqlalchemy.url", database_url)
+    async_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
+    config.set_main_option("sqlalchemy.url", async_url)
 
 
 def run_migrations_offline() -> None:

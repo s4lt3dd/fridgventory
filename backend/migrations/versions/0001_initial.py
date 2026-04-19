@@ -18,16 +18,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Enum types
-    member_role_enum = sa.Enum("owner", "member", name="member_role_enum")
-    item_category_enum = sa.Enum(
-        "produce", "dairy", "meat", "seafood", "bakery",
-        "frozen", "canned", "dry_goods", "beverages",
-        "condiments", "snacks", "other",
-        name="item_category_enum",
-    )
-    member_role_enum.create(op.get_bind(), checkfirst=True)
-    item_category_enum.create(op.get_bind(), checkfirst=True)
+    # Enum types — use postgresql.ENUM with create_type=False in columns
+    # since we create them explicitly here
+    op.execute("CREATE TYPE member_role_enum AS ENUM ('owner', 'member')")
+    op.execute("CREATE TYPE item_category_enum AS ENUM ('produce', 'dairy', 'meat', 'seafood', 'bakery', 'frozen', 'canned', 'dry_goods', 'beverages', 'condiments', 'snacks', 'other')")
 
     # Users
     op.create_table(
@@ -58,7 +52,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("household_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("households.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True),
-        sa.Column("role", member_role_enum, nullable=False, server_default="member"),
+        sa.Column("role", postgresql.ENUM("owner", "member", name="member_role_enum", create_type=False), nullable=False, server_default="member"),
         sa.Column("joined_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()),
         sa.UniqueConstraint("household_id", "user_id", name="uq_household_user"),
     )
@@ -69,7 +63,7 @@ def upgrade() -> None:
         sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True, server_default=sa.text("gen_random_uuid()")),
         sa.Column("household_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("households.id", ondelete="CASCADE"), nullable=False, index=True),
         sa.Column("name", sa.String(255), nullable=False),
-        sa.Column("category", item_category_enum, nullable=False, server_default="other"),
+        sa.Column("category", postgresql.ENUM("produce", "dairy", "meat", "seafood", "bakery", "frozen", "canned", "dry_goods", "beverages", "condiments", "snacks", "other", name="item_category_enum", create_type=False), nullable=False, server_default="other"),
         sa.Column("quantity", sa.Float(), nullable=False, server_default="1"),
         sa.Column("unit", sa.String(50), nullable=False, server_default="'pieces'"),
         sa.Column("added_date", sa.Date(), nullable=False),
@@ -117,5 +111,5 @@ def downgrade() -> None:
     op.drop_table("household_members")
     op.drop_table("households")
     op.drop_table("users")
-    sa.Enum(name="member_role_enum").drop(op.get_bind(), checkfirst=True)
-    sa.Enum(name="item_category_enum").drop(op.get_bind(), checkfirst=True)
+    op.execute("DROP TYPE IF EXISTS member_role_enum")
+    op.execute("DROP TYPE IF EXISTS item_category_enum")
