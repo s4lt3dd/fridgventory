@@ -1,8 +1,9 @@
 FROM python:3.11-slim AS builder
 WORKDIR /build
+RUN pip install --upgrade pip
 COPY backend/pyproject.toml ./
-RUN pip install --upgrade pip && pip install --no-cache-dir -e "." || true
 COPY backend/ ./
+RUN pip install --no-cache-dir "."
 
 FROM python:3.11-slim AS runtime
 RUN addgroup --system --gid 1001 appgroup && \
