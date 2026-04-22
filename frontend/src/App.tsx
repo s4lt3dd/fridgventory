@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import Layout from '@/components/layout/Layout';
+import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
 import DashboardPage from '@/pages/DashboardPage';
@@ -34,6 +35,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route
@@ -45,22 +47,23 @@ export default function App() {
           }
         />
         <Route
-          path="/*"
+          path="/app/*"
           element={
             <ProtectedRoute>
               <Layout>
                 <Routes>
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/add-item" element={<AddItemPage />} />
-                  <Route path="/households" element={<HouseholdPage />} />
-                  <Route path="/recipes" element={<RecipesPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  <Route path="dashboard" element={<DashboardPage />} />
+                  <Route path="add-item" element={<AddItemPage />} />
+                  <Route path="households" element={<HouseholdPage />} />
+                  <Route path="recipes" element={<RecipesPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
+                  <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
                 </Routes>
               </Layout>
             </ProtectedRoute>
           }
         />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </ErrorBoundary>
   );

@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 
 interface ModalProps {
   isOpen: boolean;
@@ -29,23 +30,31 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-label={title}
+    >
+      <div
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div className="relative z-10 w-full max-w-md rounded-[var(--radius-lg)] bg-surface p-8 shadow-xl">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h2 className="font-display text-3xl text-text-primary">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            aria-label="Close"
+            className="rounded-full p-1.5 text-text-muted transition-colors duration-150 hover:bg-surface-subtle hover:text-primary cursor-pointer focus:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/20"
           >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <X className="h-5 w-5" />
           </button>
         </div>
         {children}
       </div>
     </div>,
-    document.body
+    document.body,
   );
 }

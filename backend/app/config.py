@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     # Recipe API
     recipe_api_url: str = "https://www.themealdb.com/api/json/v1/1"
 
+    # Anthropic (rescue recipes)
+    anthropic_api_key: str | None = Field(default=None, alias="ANTHROPIC_API_KEY")
+
     # CORS
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
 

@@ -1,7 +1,10 @@
+import { Link } from 'react-router-dom';
+import { Refrigerator } from 'lucide-react';
 import type { GroupedItems, PantryItem } from '@/types';
 import { URGENCY_ORDER } from '@/utils/urgency';
 import UrgencyGroup from './UrgencyGroup';
-import { Link } from 'react-router-dom';
+import EmptyState from '@/components/ui/EmptyState';
+import Button from '@/components/ui/Button';
 
 interface ItemListProps {
   grouped: GroupedItems;
@@ -14,16 +17,16 @@ export default function ItemList({ grouped, onEdit, onDelete }: ItemListProps) {
 
   if (totalItems === 0) {
     return (
-      <div className="rounded-xl border-2 border-dashed border-gray-300 p-8 text-center">
-        <p className="text-lg font-medium text-gray-600">Your pantry is empty</p>
-        <p className="mt-1 text-sm text-gray-500">Start by adding items to track</p>
-        <Link
-          to="/add-item"
-          className="mt-4 inline-flex items-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-        >
-          Add your first item
-        </Link>
-      </div>
+      <EmptyState
+        icon={<Refrigerator className="h-10 w-10" />}
+        title="Your fridge is empty"
+        description="Start tracking what's inside so nothing goes to waste."
+        action={
+          <Link to="/app/add-item">
+            <Button>Add your first item</Button>
+          </Link>
+        }
+      />
     );
   }
 

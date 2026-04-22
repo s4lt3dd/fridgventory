@@ -94,3 +94,17 @@ export interface NotificationPreferences {
   email_enabled: boolean;
   days_before_expiry: number;
 }
+
+export type RescueRecipeDifficulty = 'easy' | 'medium' | 'hard';
+
+export interface RescueRecipe {
+  name: string;
+  description: string;
+  uses_items: string[];
+  estimated_time_minutes: number;
+  difficulty: RescueRecipeDifficulty;
+}
+
+export interface RescueRecipesResponse {
+  recipes: RescueRecipe[];
+}

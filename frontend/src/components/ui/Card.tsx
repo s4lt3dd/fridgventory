@@ -3,11 +3,21 @@ import clsx from 'clsx';
 interface CardProps {
   children: React.ReactNode;
   className?: string;
+  hover?: boolean;
+  onClick?: () => void;
 }
 
-export default function Card({ children, className }: CardProps) {
+export default function Card({ children, className, hover, onClick }: CardProps) {
   return (
-    <div className={clsx('rounded-xl border border-gray-200 bg-white p-4 shadow-sm', className)}>
+    <div
+      onClick={onClick}
+      className={clsx(
+        'rounded-[var(--radius-lg)] bg-surface p-[var(--space-lg)] shadow-md border border-border/40',
+        hover && 'hover-lift cursor-pointer',
+        onClick && !hover && 'cursor-pointer',
+        className,
+      )}
+    >
       {children}
     </div>
   );

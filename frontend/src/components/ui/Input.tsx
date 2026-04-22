@@ -5,15 +5,20 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
   helperText?: string;
+  hint?: string;
 }
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, helperText, className, id, ...props }, ref) => {
+  ({ label, error, helperText, hint, className, id, ...props }, ref) => {
     const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
+    const helpText = hint ?? helperText;
     return (
       <div className="w-full">
         {label && (
-          <label htmlFor={inputId} className="mb-1 block text-sm font-medium text-gray-700">
+          <label
+            htmlFor={inputId}
+            className="mb-1.5 block text-sm font-semibold text-text-primary"
+          >
             {label}
           </label>
         )}
@@ -21,19 +26,19 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={clsx(
-            'block w-full rounded-lg border px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-0',
+            'block w-full rounded-[var(--radius-md)] border bg-surface px-4 py-3 text-base text-text-primary placeholder:text-text-muted/50 transition-all duration-150 ease-out focus:outline-none focus-visible:outline-none',
             error
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-emerald-500 focus:ring-emerald-500',
-            className
+              ? 'border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20'
+              : 'border-border focus-visible:border-primary focus-visible:ring-[3px] focus-visible:ring-primary/20',
+            className,
           )}
           {...props}
         />
-        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-        {helperText && !error && <p className="mt-1 text-sm text-gray-500">{helperText}</p>}
+        {error && <p className="mt-1 text-sm font-medium text-primary">{error}</p>}
+        {helpText && !error && <p className="mt-1 text-sm text-text-muted">{helpText}</p>}
       </div>
     );
-  }
+  },
 );
 
 Input.displayName = 'Input';

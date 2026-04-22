@@ -1,106 +1,128 @@
-import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Users,
+  ChefHat,
+  Settings,
+  LogOut,
+  Refrigerator,
+  type LucideIcon,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
-const navLinks = [
-  { to: '/dashboard', label: 'Dashboard' },
-  { to: '/add-item', label: 'Add Item' },
-  { to: '/households', label: 'Households' },
-  { to: '/recipes', label: 'Recipes' },
-  { to: '/settings', label: 'Settings' },
+interface NavItem {
+  to: string;
+  label: string;
+  Icon: LucideIcon;
+  emphasised?: boolean;
+}
+
+const NAV: NavItem[] = [
+  { to: '/app/dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+  { to: '/app/add-item', label: 'Add', Icon: PlusCircle, emphasised: true },
+  { to: '/app/households', label: 'Households', Icon: Users },
+  { to: '/app/recipes', label: 'Recipes', Icon: ChefHat },
+  { to: '/app/settings', label: 'Settings', Icon: Settings },
 ];
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const isActive = (to: string) => location.pathname === to;
 
   return (
-    <nav className="border-b border-gray-200 bg-white">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
-          <Link to="/dashboard" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-emerald-600">FridgeCheck</span>
-          </Link>
+    <>
+      {/* Mobile top bar */}
+      <header className="md:hidden sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-surface px-4 shadow-sm">
+        <Link to="/app/dashboard" className="flex items-center gap-2">
+          <Refrigerator className="h-6 w-6 text-primary" />
+          <span className="font-display text-3xl leading-none text-primary">FridgeCheck</span>
+        </Link>
+      </header>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex md:items-center md:gap-1">
-            {navLinks.map((link) => (
+      {/* Desktop sidebar */}
+      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-30 md:flex md:w-[220px] md:flex-col md:border-r md:border-border md:bg-surface">
+        <Link to="/app/dashboard" className="flex items-center gap-2 px-5 py-5">
+          <Refrigerator className="h-7 w-7 text-primary" />
+          <span className="font-display text-3xl leading-none text-primary">FridgeCheck</span>
+        </Link>
+
+        <nav className="flex-1 space-y-1 px-3">
+          {NAV.map(({ to, label, Icon }) => {
+            const active = isActive(to);
+            return (
               <Link
-                key={link.to}
-                to={link.to}
+                key={to}
+                to={to}
                 className={clsx(
-                  'rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-                  location.pathname === link.to
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                  'flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-semibold transition-all duration-150',
+                  active
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-text-muted hover:bg-surface-subtle hover:text-primary',
                 )}
               >
-                {link.label}
+                <Icon className="h-5 w-5" />
+                {label}
               </Link>
-            ))}
-          </div>
+            );
+          })}
+        </nav>
 
-          {/* User menu */}
-          <div className="hidden items-center gap-3 md:flex">
-            <span className="text-sm text-gray-600">{user?.username}</span>
-            <button
-              onClick={() => void logout()}
-              className="rounded-lg px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100"
-            >
-              Logout
-            </button>
+        <div className="border-t border-border p-3">
+          <div className="px-2 pb-2">
+            <p className="truncate text-xs text-text-muted">{user?.email}</p>
           </div>
-
-          {/* Mobile hamburger */}
           <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="rounded-lg p-2 text-gray-600 hover:bg-gray-100 md:hidden"
+            onClick={() => void logout()}
+            className="flex w-full items-center gap-3 rounded-[var(--radius-md)] px-3 py-2.5 text-sm font-semibold text-text-muted transition-all duration-150 hover:bg-surface-subtle hover:text-primary cursor-pointer"
           >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              {mobileOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
+            <LogOut className="h-5 w-5" />
+            Log out
           </button>
         </div>
-      </div>
+      </aside>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="border-t border-gray-200 pb-3 md:hidden">
-          <div className="space-y-1 px-4 pt-2">
-            {navLinks.map((link) => (
+      {/* Mobile bottom tab bar */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-border bg-surface px-2 shadow-lg"
+        aria-label="Primary"
+      >
+        {NAV.map(({ to, label, Icon, emphasised }) => {
+          const active = isActive(to);
+          if (emphasised) {
+            return (
               <Link
-                key={link.to}
-                to={link.to}
-                onClick={() => setMobileOpen(false)}
+                key={to}
+                to={to}
+                aria-label={label}
                 className={clsx(
-                  'block rounded-lg px-3 py-2 text-sm font-medium',
-                  location.pathname === link.to
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-gray-600 hover:bg-gray-100'
+                  'flex h-14 w-14 -translate-y-3 items-center justify-center rounded-full bg-accent text-white shadow-lg transition-all duration-200 cursor-pointer',
+                  'hover:bg-accent-dark hover:-translate-y-4 focus:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/20',
                 )}
               >
-                {link.label}
+                <Icon className="h-7 w-7" />
               </Link>
-            ))}
-            <div className="mt-3 border-t border-gray-200 pt-3">
-              <p className="px-3 text-sm text-gray-500">{user?.username}</p>
-              <button
-                onClick={() => void logout()}
-                className="mt-1 block w-full rounded-lg px-3 py-2 text-left text-sm text-gray-600 hover:bg-gray-100"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </nav>
+            );
+          }
+          return (
+            <Link
+              key={to}
+              to={to}
+              aria-label={label}
+              className={clsx(
+                'flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-[11px] font-semibold transition-colors duration-150',
+                active ? 'text-primary' : 'text-text-muted',
+              )}
+            >
+              <Icon className="h-5 w-5" />
+              {label}
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 }

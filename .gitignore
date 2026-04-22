@@ -56,6 +56,9 @@ override.tf.json
 # Docker
 .dockerignore
 
+# Claude Code local state
+.claude/
+
 # IDE
 .vscode/
 .idea/
