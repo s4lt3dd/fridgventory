@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { authApi } from '@/api/auth';
 import { setTokens, clearTokens, getRefreshToken, getAccessToken } from '@/api/client';
 import { User } from '@/types';
@@ -27,6 +28,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
 
   // On mount, try to restore session from localStorage
   useEffect(() => {
@@ -66,20 +68,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
+    // Clear any cached queries from a previous session before signing in as
+    // a new user, otherwise stale data (households, items…) keyed without a
+    // user id can briefly bleed across accounts.
+    queryClient.clear();
     const tokens = await authApi.login(email, password);
     setTokens(tokens.access_token, tokens.refresh_token);
     const userData = await authApi.me();
     setUser(userData);
-  }, []);
+  }, [queryClient]);
 
   const register = useCallback(
     async (email: string, username: string, password: string) => {
+      queryClient.clear();
       const tokens = await authApi.register(email, username, password);
       setTokens(tokens.access_token, tokens.refresh_token);
       const userData = await authApi.me();
       setUser(userData);
     },
-    []
+    [queryClient]
   );
 
   const logout = useCallback(async () => {
@@ -93,7 +100,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
     clearTokens();
     setUser(null);
-  }, []);
+    // Drop every cached query so the next user doesn't see stale data.
+    queryClient.clear();
+  }, [queryClient]);
 
   const value = useMemo<AuthContextValue>(
     () => ({

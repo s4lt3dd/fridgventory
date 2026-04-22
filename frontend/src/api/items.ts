@@ -3,10 +3,24 @@ import { PantryItem, ItemCreate } from '@/types';
 
 export const itemsApi = {
   list: async (householdId: string): Promise<PantryItem[]> => {
-    const { data } = await apiClient.get<PantryItem[]>(
-      `/households/${householdId}/items`
-    );
-    return data;
+    const { data } = await apiClient.get<
+      | PantryItem[]
+      | {
+          expired?: PantryItem[];
+          today?: PantryItem[];
+          this_week?: PantryItem[];
+          fresh?: PantryItem[];
+        }
+    >(`/households/${householdId}/items`);
+    // Backend returns a grouped response; flatten to a flat array so the
+    // frontend's urgency grouper can iterate it.
+    if (Array.isArray(data)) return data;
+    return [
+      ...(data.expired ?? []),
+      ...(data.today ?? []),
+      ...(data.this_week ?? []),
+      ...(data.fresh ?? []),
+    ];
   },
 
   create: async (householdId: string, item: ItemCreate): Promise<PantryItem> => {
