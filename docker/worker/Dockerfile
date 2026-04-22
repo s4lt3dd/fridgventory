@@ -1,11 +1,11 @@
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 WORKDIR /build
 RUN pip install --upgrade pip
 COPY backend/pyproject.toml ./
 COPY backend/ ./
 RUN pip install --no-cache-dir "."
 
-FROM python:3.11-slim AS runtime
+FROM python:3.14-slim AS runtime
 RUN addgroup --system --gid 1001 appgroup && \
     adduser --system --uid 1001 --ingroup appgroup appuser
 WORKDIR /app
