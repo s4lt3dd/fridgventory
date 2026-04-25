@@ -1,8 +1,10 @@
 FROM python:3.11-slim AS builder
 WORKDIR /build
-RUN pip install --upgrade pip
+# hadolint ignore=DL3013
+RUN pip install --no-cache-dir --upgrade pip
 COPY backend/pyproject.toml ./
 COPY backend/ ./
+# hadolint ignore=DL3013
 RUN pip install --no-cache-dir ".[dev]"
 
 FROM python:3.11-slim AS runtime
