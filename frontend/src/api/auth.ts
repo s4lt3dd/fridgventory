@@ -1,9 +1,9 @@
-import { apiClient } from './client';
-import { AuthTokens, User } from '@/types';
+import { apiClient } from "./client";
+import { AuthTokens, User } from "@/types";
 
 export const authApi = {
   login: async (email: string, password: string): Promise<AuthTokens> => {
-    const { data } = await apiClient.post<AuthTokens>('/auth/login', {
+    const { data } = await apiClient.post<AuthTokens>("/auth/login", {
       email,
       password,
     });
@@ -13,9 +13,9 @@ export const authApi = {
   register: async (
     email: string,
     username: string,
-    password: string
+    password: string,
   ): Promise<AuthTokens> => {
-    const { data } = await apiClient.post<AuthTokens>('/auth/register', {
+    const { data } = await apiClient.post<AuthTokens>("/auth/register", {
       email,
       username,
       password,
@@ -24,18 +24,18 @@ export const authApi = {
   },
 
   refresh: async (refreshToken: string): Promise<AuthTokens> => {
-    const { data } = await apiClient.post<AuthTokens>('/auth/refresh', {
+    const { data } = await apiClient.post<AuthTokens>("/auth/refresh", {
       refresh_token: refreshToken,
     });
     return data;
   },
 
   logout: async (refreshToken: string): Promise<void> => {
-    await apiClient.post('/auth/logout', { refresh_token: refreshToken });
+    await apiClient.post("/auth/logout", { refresh_token: refreshToken });
   },
 
   me: async (): Promise<User> => {
-    const { data } = await apiClient.get<User>('/auth/me');
+    const { data } = await apiClient.get<User>("/auth/me");
     return data;
   },
 };

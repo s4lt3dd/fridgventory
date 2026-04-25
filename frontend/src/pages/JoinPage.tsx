@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { UserPlus, AlertTriangle } from 'lucide-react';
-import { useJoinHousehold } from '@/hooks/useHousehold';
-import Button from '@/components/ui/Button';
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { UserPlus, AlertTriangle } from "lucide-react";
+import { useJoinHousehold } from "@/hooks/useHousehold";
+import Button from "@/components/ui/Button";
 
 export default function JoinPage() {
   const { token } = useParams<{ token: string }>();
@@ -14,12 +14,12 @@ export default function JoinPage() {
     if (!token) return;
     setError(null);
     joinHousehold.mutate(token, {
-      onSuccess: () => navigate('/app/households'),
+      onSuccess: () => navigate("/app/households"),
       onError: (err: unknown) => {
         const message =
-          err && typeof err === 'object' && 'message' in err
+          err && typeof err === "object" && "message" in err
             ? String((err as { message?: string }).message)
-            : 'Could not join — the invite may be invalid or expired.';
+            : "Could not join — the invite may be invalid or expired.";
         setError(message);
       },
     });
@@ -31,9 +31,12 @@ export default function JoinPage() {
         <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
           <UserPlus className="h-7 w-7" />
         </div>
-        <h1 className="font-display text-4xl text-text-primary">You're invited</h1>
+        <h1 className="font-display text-4xl text-text-primary">
+          You're invited
+        </h1>
         <p className="mt-2 text-sm text-text-muted">
-          Someone shared a FridgeCheck household invite with you. Accept to join and share the pantry.
+          Someone shared a FridgeCheck household invite with you. Accept to join
+          and share the pantry.
         </p>
 
         {error && (
@@ -53,11 +56,11 @@ export default function JoinPage() {
             disabled={joinHousehold.isPending}
             className="w-full"
           >
-            {joinHousehold.isPending ? 'Joining…' : 'Accept invite'}
+            {joinHousehold.isPending ? "Joining…" : "Accept invite"}
           </Button>
           <Button
             variant="ghost"
-            onClick={() => navigate('/app/households')}
+            onClick={() => navigate("/app/households")}
             disabled={joinHousehold.isPending}
             className="w-full"
           >

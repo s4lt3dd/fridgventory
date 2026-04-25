@@ -12,8 +12,8 @@ import {
   Cookie,
   Package2,
   type LucideIcon,
-} from 'lucide-react';
-import type { ItemCategory } from '@/types';
+} from "lucide-react";
+import type { ItemCategory } from "@/types";
 
 const MAP: Record<ItemCategory, LucideIcon> = {
   produce: Apple,
@@ -36,7 +36,11 @@ interface CategoryIconProps {
   className?: string;
 }
 
-export default function CategoryIcon({ category, size = 20, className }: CategoryIconProps) {
+export default function CategoryIcon({
+  category,
+  size = 20,
+  className,
+}: CategoryIconProps) {
   const Icon = MAP[category] ?? Package2;
   return <Icon size={size} className={className} aria-hidden="true" />;
 }

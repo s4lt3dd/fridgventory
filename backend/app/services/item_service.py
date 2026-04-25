@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, timedelta
+from datetime import date
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession

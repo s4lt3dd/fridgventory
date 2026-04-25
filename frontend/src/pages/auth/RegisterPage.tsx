@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { Refrigerator } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import { isValidEmail, isValidPassword } from '@/utils/validation';
+import { useState } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { Refrigerator } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import { isValidEmail, isValidPassword } from "@/utils/validation";
 
 export default function RegisterPage() {
   const { register, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [usernameError, setUsernameError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (authLoading) return null;
@@ -22,32 +22,32 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     let hasError = false;
     if (!isValidEmail(email)) {
-      setEmailError('Please enter a valid email address.');
+      setEmailError("Please enter a valid email address.");
       hasError = true;
     } else {
-      setEmailError('');
+      setEmailError("");
     }
     if (!username.trim()) {
-      setUsernameError('Please pick a username.');
+      setUsernameError("Please pick a username.");
       hasError = true;
     } else {
-      setUsernameError('');
+      setUsernameError("");
     }
     if (!isValidPassword(password)) {
-      setPasswordError('Password must be at least 8 characters.');
+      setPasswordError("Password must be at least 8 characters.");
       hasError = true;
     } else {
-      setPasswordError('');
+      setPasswordError("");
     }
     if (hasError) return;
     setLoading(true);
     try {
       await register(email, username, password);
     } catch {
-      setError('Registration failed. Email or username may already be taken.');
+      setError("Registration failed. Email or username may already be taken.");
     } finally {
       setLoading(false);
     }
@@ -59,9 +59,13 @@ export default function RegisterPage() {
         <div className="mb-8 text-center">
           <div className="mb-3 inline-flex items-center gap-2">
             <Refrigerator className="h-9 w-9 text-primary" />
-            <h1 className="font-display text-6xl leading-none text-primary">FridgeCheck</h1>
+            <h1 className="font-display text-6xl leading-none text-primary">
+              FridgeCheck
+            </h1>
           </div>
-          <p className="text-text-muted">Start tracking today — waste less, eat better.</p>
+          <p className="text-text-muted">
+            Start tracking today — waste less, eat better.
+          </p>
         </div>
 
         <form
@@ -80,7 +84,7 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              if (emailError) setEmailError('');
+              if (emailError) setEmailError("");
             }}
             placeholder="you@example.com"
             autoComplete="email"
@@ -93,7 +97,7 @@ export default function RegisterPage() {
             value={username}
             onChange={(e) => {
               setUsername(e.target.value);
-              if (usernameError) setUsernameError('');
+              if (usernameError) setUsernameError("");
             }}
             placeholder="Pick a username"
             autoComplete="username"
@@ -107,7 +111,7 @@ export default function RegisterPage() {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              if (passwordError) setPasswordError('');
+              if (passwordError) setPasswordError("");
             }}
             placeholder="At least 8 characters"
             hint="Must be at least 8 characters."
@@ -122,8 +126,11 @@ export default function RegisterPage() {
         </form>
 
         <p className="mt-5 text-center text-sm text-text-muted">
-          Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-primary hover:underline">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="font-semibold text-primary hover:underline"
+          >
             Sign in
           </Link>
         </p>

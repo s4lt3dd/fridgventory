@@ -1,8 +1,13 @@
-import { Pencil, Trash2 } from 'lucide-react';
-import type { PantryItem } from '@/types';
-import Badge from '@/components/ui/Badge';
-import CategoryIcon from '@/components/ui/CategoryIcon';
-import { getUrgency, getDaysRemaining, formatDaysRemaining, getExpiryProgress } from '@/utils/expiry';
+import { Pencil, Trash2 } from "lucide-react";
+import type { PantryItem } from "@/types";
+import Badge from "@/components/ui/Badge";
+import CategoryIcon from "@/components/ui/CategoryIcon";
+import {
+  getUrgency,
+  getDaysRemaining,
+  formatDaysRemaining,
+  getExpiryProgress,
+} from "@/utils/expiry";
 
 interface ItemCardProps {
   item: PantryItem;
@@ -10,10 +15,10 @@ interface ItemCardProps {
   onDelete: (id: string) => void;
 }
 
-const progressColor: Record<'safe' | 'warning' | 'danger', string> = {
-  safe: 'bg-expiry-safe',
-  warning: 'bg-expiry-warning',
-  danger: 'bg-expiry-danger',
+const progressColor: Record<"safe" | "warning" | "danger", string> = {
+  safe: "bg-expiry-safe",
+  warning: "bg-expiry-warning",
+  danger: "bg-expiry-danger",
 };
 
 export default function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
@@ -29,7 +34,9 @@ export default function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="truncate text-sm font-semibold text-text-primary">{item.name}</h3>
+          <h3 className="truncate text-sm font-semibold text-text-primary">
+            {item.name}
+          </h3>
           <Badge urgency={urgency} expiryDate={item.expiry_date} />
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-text-muted">
@@ -38,7 +45,11 @@ export default function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
           </span>
           <span>{formatDaysRemaining(days)}</span>
         </div>
-        {item.notes && <p className="mt-1 truncate text-xs text-text-muted/80">{item.notes}</p>}
+        {item.notes && (
+          <p className="mt-1 truncate text-xs text-text-muted/80">
+            {item.notes}
+          </p>
+        )}
         {/* Shelf-life progress */}
         <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-border/50">
           <div

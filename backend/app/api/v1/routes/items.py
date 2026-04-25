@@ -9,7 +9,7 @@ from app.api.v1.dependencies import get_current_user, require_household_member
 from app.database import get_db
 from app.models.user import User
 from app.schemas.item import ItemCreate, ItemResponse, ItemsGroupedResponse, ItemUpdate
-from app.services.item_service import ItemService, compute_urgency
+from app.services.item_service import ItemService
 
 router = APIRouter(prefix="/households/{household_id}/items", tags=["items"])
 

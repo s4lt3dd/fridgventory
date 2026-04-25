@@ -1,18 +1,18 @@
-export type UrgencyLevel = 'expired' | 'today' | 'this_week' | 'fresh';
+export type UrgencyLevel = "expired" | "today" | "this_week" | "fresh";
 
 export type ItemCategory =
-  | 'produce'
-  | 'dairy'
-  | 'meat'
-  | 'seafood'
-  | 'bakery'
-  | 'frozen'
-  | 'canned'
-  | 'dry_goods'
-  | 'beverages'
-  | 'condiments'
-  | 'snacks'
-  | 'other';
+  | "produce"
+  | "dairy"
+  | "meat"
+  | "seafood"
+  | "bakery"
+  | "frozen"
+  | "canned"
+  | "dry_goods"
+  | "beverages"
+  | "condiments"
+  | "snacks"
+  | "other";
 
 export interface User {
   id: string;
@@ -55,7 +55,7 @@ export interface HouseholdMember {
   user_id: string;
   username: string;
   email: string;
-  role: 'owner' | 'member';
+  role: "owner" | "member";
   joined_at: string;
 }
 
@@ -95,7 +95,7 @@ export interface NotificationPreferences {
   days_before_expiry: number;
 }
 
-export type RescueRecipeDifficulty = 'easy' | 'medium' | 'hard';
+export type RescueRecipeDifficulty = "easy" | "medium" | "hard";
 
 export interface RescueRecipe {
   name: string;

@@ -4,7 +4,6 @@ import pytest
 from httpx import AsyncClient
 
 from app.models.household import Household
-from app.models.user import User
 
 
 @pytest.mark.asyncio

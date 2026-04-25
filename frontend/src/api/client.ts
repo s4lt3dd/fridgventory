@@ -1,32 +1,32 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? '/api/v1';
+const BASE_URL = import.meta.env.VITE_API_URL ?? "/api/v1";
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 // ---- helpers ----------------------------------------------------------------
 
 function getAccessToken(): string | null {
-  return localStorage.getItem('access_token');
+  return localStorage.getItem("access_token");
 }
 
 function getRefreshToken(): string | null {
-  return localStorage.getItem('refresh_token');
+  return localStorage.getItem("refresh_token");
 }
 
 function setTokens(access: string, refresh: string): void {
-  localStorage.setItem('access_token', access);
-  localStorage.setItem('refresh_token', refresh);
+  localStorage.setItem("access_token", access);
+  localStorage.setItem("refresh_token", refresh);
 }
 
 function clearTokens(): void {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
 }
 
 // ---- request interceptor ----------------------------------------------------
@@ -92,7 +92,7 @@ apiClient.interceptors.response.use(
     const refreshToken = getRefreshToken();
     if (!refreshToken) {
       clearTokens();
-      window.location.href = '/login';
+      window.location.href = "/login";
       return Promise.reject(error);
     }
 
@@ -115,12 +115,12 @@ apiClient.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
       clearTokens();
-      window.location.href = '/login';
+      window.location.href = "/login";
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;
     }
-  }
+  },
 );
 
 export { setTokens, clearTokens, getAccessToken, getRefreshToken };

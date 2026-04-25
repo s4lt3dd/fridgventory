@@ -1,5 +1,5 @@
-import { apiClient } from './client';
-import { PantryItem, ItemCreate } from '@/types';
+import { apiClient } from "./client";
+import { PantryItem, ItemCreate } from "@/types";
 
 export const itemsApi = {
   list: async (householdId: string): Promise<PantryItem[]> => {
@@ -23,10 +23,13 @@ export const itemsApi = {
     ];
   },
 
-  create: async (householdId: string, item: ItemCreate): Promise<PantryItem> => {
+  create: async (
+    householdId: string,
+    item: ItemCreate,
+  ): Promise<PantryItem> => {
     const { data } = await apiClient.post<PantryItem>(
       `/households/${householdId}/items`,
-      item
+      item,
     );
     return data;
   },
@@ -34,11 +37,11 @@ export const itemsApi = {
   update: async (
     householdId: string,
     itemId: string,
-    updates: Partial<ItemCreate>
+    updates: Partial<ItemCreate>,
   ): Promise<PantryItem> => {
     const { data } = await apiClient.patch<PantryItem>(
       `/households/${householdId}/items/${itemId}`,
-      updates
+      updates,
     );
     return data;
   },
@@ -49,7 +52,7 @@ export const itemsApi = {
 
   getExpiring: async (householdId: string): Promise<PantryItem[]> => {
     const { data } = await apiClient.get<PantryItem[]>(
-      `/households/${householdId}/items/expiring`
+      `/households/${householdId}/items/expiring`,
     );
     return data;
   },

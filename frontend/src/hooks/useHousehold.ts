@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { householdsApi } from '@/api/households';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { householdsApi } from "@/api/households";
 
 const householdKeys = {
-  all: () => ['households'] as const,
-  single: (id: string) => ['households', id] as const,
-  members: (id: string) => ['households', id, 'members'] as const,
-  invite: (id: string) => ['households', id, 'invite'] as const,
+  all: () => ["households"] as const,
+  single: (id: string) => ["households", id] as const,
+  members: (id: string) => ["households", id, "members"] as const,
+  invite: (id: string) => ["households", id, "invite"] as const,
 };
 
 export function useHouseholds() {

@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -106,13 +106,13 @@ class ItemRepository:
         item = await self.get_by_id(item_id)
         if not item:
             return False
-        item.deleted_at = datetime.now(timezone.utc)
+        item.deleted_at = datetime.now(UTC)
         await self.db.commit()
         return True
 
     async def cleanup_old_deleted(self, days: int = 7) -> int:
         """Permanently delete items soft-deleted more than `days` ago. Returns count."""
-        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        cutoff = datetime.now(UTC) - timedelta(days=days)
         result = await self.db.execute(
             select(PantryItem).where(
                 and_(

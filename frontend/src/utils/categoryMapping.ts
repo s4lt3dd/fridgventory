@@ -1,4 +1,4 @@
-import type { ItemCategory } from '@/types';
+import type { ItemCategory } from "@/types";
 
 /**
  * Default shelf-life (days) per category, used as a fallback when a barcode
@@ -26,24 +26,38 @@ export const DEFAULT_EXPIRY_DAYS: Record<ItemCategory, number> = {
  * Order matters: more specific matches come first so e.g. "frozen-fish" wins
  * against plain "fish".
  */
-export function mapCategoryTags(tags: string[] | undefined | null): ItemCategory {
-  if (!tags || tags.length === 0) return 'other';
-  const joined = tags.join(' ').toLowerCase();
+export function mapCategoryTags(
+  tags: string[] | undefined | null,
+): ItemCategory {
+  if (!tags || tags.length === 0) return "other";
+  const joined = tags.join(" ").toLowerCase();
 
-  if (/\bfrozen\b/.test(joined)) return 'frozen';
-  if (/\b(canned|tinned)\b/.test(joined)) return 'canned';
-  if (/\b(dairy|dairies|milk|cheese|yogurt|yoghurt)\b/.test(joined)) return 'dairy';
-  if (/\b(seafood|fish|shellfish)\b/.test(joined)) return 'seafood';
-  if (/\b(meat|beef|pork|chicken|poultry|sausage|ham)\b/.test(joined)) return 'meat';
-  if (/\b(bakery|bread|pastries|pastry)\b/.test(joined)) return 'bakery';
-  if (/\b(fruit|fruits|vegetable|vegetables|produce)\b/.test(joined)) return 'produce';
-  if (/\b(beverage|beverages|drink|drinks|juice|juices|water|waters|soda)\b/.test(joined))
-    return 'beverages';
+  if (/\bfrozen\b/.test(joined)) return "frozen";
+  if (/\b(canned|tinned)\b/.test(joined)) return "canned";
+  if (/\b(dairy|dairies|milk|cheese|yogurt|yoghurt)\b/.test(joined))
+    return "dairy";
+  if (/\b(seafood|fish|shellfish)\b/.test(joined)) return "seafood";
+  if (/\b(meat|beef|pork|chicken|poultry|sausage|ham)\b/.test(joined))
+    return "meat";
+  if (/\b(bakery|bread|pastries|pastry)\b/.test(joined)) return "bakery";
+  if (/\b(fruit|fruits|vegetable|vegetables|produce)\b/.test(joined))
+    return "produce";
+  if (
+    /\b(beverage|beverages|drink|drinks|juice|juices|water|waters|soda)\b/.test(
+      joined,
+    )
+  )
+    return "beverages";
   if (/\b(condiment|condiments|sauce|sauces|dressing|dressings)\b/.test(joined))
-    return 'condiments';
-  if (/\b(snack|snacks|biscuit|biscuits|chocolate|confection|confectioneries|candy)\b/.test(joined))
-    return 'snacks';
-  if (/\b(cereal|cereals|pasta|pastas|rice|grain|grains|dry)\b/.test(joined)) return 'dry_goods';
+    return "condiments";
+  if (
+    /\b(snack|snacks|biscuit|biscuits|chocolate|confection|confectioneries|candy)\b/.test(
+      joined,
+    )
+  )
+    return "snacks";
+  if (/\b(cereal|cereals|pasta|pastas|rice|grain|grains|dry)\b/.test(joined))
+    return "dry_goods";
 
-  return 'other';
+  return "other";
 }

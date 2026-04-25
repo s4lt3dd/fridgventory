@@ -78,4 +78,7 @@ class HouseholdMember(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<HouseholdMember household={self.household_id} user={self.user_id} role={self.role}>"
+        return (
+            f"<HouseholdMember household={self.household_id} "
+            f"user={self.user_id} role={self.role}>"
+        )

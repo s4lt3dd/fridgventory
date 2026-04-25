@@ -1,7 +1,7 @@
-import { daysUntilExpiry } from './date';
-import { parseISO, differenceInCalendarDays, startOfDay } from 'date-fns';
+import { daysUntilExpiry } from "./date";
+import { parseISO, differenceInCalendarDays, startOfDay } from "date-fns";
 
-export type Urgency = 'safe' | 'warning' | 'danger';
+export type Urgency = "safe" | "warning" | "danger";
 
 /**
  * Bucket expiry date into 3-tier urgency:
@@ -11,10 +11,10 @@ export type Urgency = 'safe' | 'warning' | 'danger';
  */
 export function getUrgency(expiryDate: string): Urgency {
   const days = daysUntilExpiry(expiryDate);
-  if (days < 0) return 'danger';
-  if (days <= 1) return 'danger';
-  if (days <= 4) return 'warning';
-  return 'safe';
+  if (days < 0) return "danger";
+  if (days <= 1) return "danger";
+  if (days <= 4) return "warning";
+  return "safe";
 }
 
 /** Days remaining until expiry (negative = past). */
@@ -26,15 +26,15 @@ export function getDaysRemaining(expiryDate: string): number {
 export function formatDaysRemaining(days: number): string {
   if (days < 0) {
     const abs = Math.abs(days);
-    if (abs === 1) return 'Expired yesterday';
+    if (abs === 1) return "Expired yesterday";
     return `Expired ${abs} days ago`;
   }
-  if (days === 0) return 'Today!';
-  if (days === 1) return 'Tomorrow';
+  if (days === 0) return "Today!";
+  if (days === 1) return "Tomorrow";
   if (days < 7) return `In ${days} days`;
-  if (days < 14) return 'In 1 week';
+  if (days < 14) return "In 1 week";
   if (days < 30) return `In ${Math.round(days / 7)} weeks`;
-  if (days < 60) return 'In 1 month';
+  if (days < 60) return "In 1 month";
   return `In ${Math.round(days / 30)} months`;
 }
 
@@ -42,7 +42,10 @@ export function formatDaysRemaining(days: number): string {
  * Progress through the shelf life, 0–100.
  * 0 = just added, 100 = at/past expiry.
  */
-export function getExpiryProgress(addedDate: string, expiryDate: string): number {
+export function getExpiryProgress(
+  addedDate: string,
+  expiryDate: string,
+): number {
   const added = startOfDay(parseISO(addedDate));
   const expiry = startOfDay(parseISO(expiryDate));
   const today = startOfDay(new Date());

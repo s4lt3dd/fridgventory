@@ -1,10 +1,10 @@
-import { Link } from 'react-router-dom';
-import { Refrigerator } from 'lucide-react';
-import type { GroupedItems, PantryItem } from '@/types';
-import { URGENCY_ORDER } from '@/utils/urgency';
-import UrgencyGroup from './UrgencyGroup';
-import EmptyState from '@/components/ui/EmptyState';
-import Button from '@/components/ui/Button';
+import { Link } from "react-router-dom";
+import { Refrigerator } from "lucide-react";
+import type { GroupedItems, PantryItem } from "@/types";
+import { URGENCY_ORDER } from "@/utils/urgency";
+import UrgencyGroup from "./UrgencyGroup";
+import EmptyState from "@/components/ui/EmptyState";
+import Button from "@/components/ui/Button";
 
 interface ItemListProps {
   grouped: GroupedItems;
@@ -13,7 +13,10 @@ interface ItemListProps {
 }
 
 export default function ItemList({ grouped, onEdit, onDelete }: ItemListProps) {
-  const totalItems = Object.values(grouped).reduce((sum, g) => sum + g.length, 0);
+  const totalItems = Object.values(grouped).reduce(
+    (sum, g) => sum + g.length,
+    0,
+  );
 
   if (totalItems === 0) {
     return (

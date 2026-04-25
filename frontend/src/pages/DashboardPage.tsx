@@ -1,23 +1,28 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Refrigerator, Users, Plus, ChefHat, Clock } from 'lucide-react';
-import { useHouseholds } from '@/hooks/useHousehold';
-import { useItems, useUpdateItem, useDeleteItem } from '@/hooks/useItems';
-import { useRescueRecipes } from '@/hooks/useRecipes';
-import ItemList from '@/components/items/ItemList';
-import ItemForm from '@/components/items/ItemForm';
-import Modal from '@/components/ui/Modal';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import EmptyState from '@/components/ui/EmptyState';
-import type { PantryItem, ItemCreate, RescueRecipe, RescueRecipeDifficulty } from '@/types';
-import { getUrgency, getDaysRemaining } from '@/utils/expiry';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Refrigerator, Users, Plus, ChefHat, Clock } from "lucide-react";
+import { useHouseholds } from "@/hooks/useHousehold";
+import { useItems, useUpdateItem, useDeleteItem } from "@/hooks/useItems";
+import { useRescueRecipes } from "@/hooks/useRecipes";
+import ItemList from "@/components/items/ItemList";
+import ItemForm from "@/components/items/ItemForm";
+import Modal from "@/components/ui/Modal";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import EmptyState from "@/components/ui/EmptyState";
+import type {
+  PantryItem,
+  ItemCreate,
+  RescueRecipe,
+  RescueRecipeDifficulty,
+} from "@/types";
+import { getUrgency, getDaysRemaining } from "@/utils/expiry";
 
 function difficultyClass(d: RescueRecipeDifficulty): string {
-  if (d === 'easy') return 'bg-expiry-safe/10 text-expiry-safe';
-  if (d === 'medium') return 'bg-expiry-warning/10 text-expiry-warning';
-  return 'bg-expiry-danger/10 text-expiry-danger';
+  if (d === "easy") return "bg-expiry-safe/10 text-expiry-safe";
+  if (d === "medium") return "bg-expiry-warning/10 text-expiry-warning";
+  return "bg-expiry-danger/10 text-expiry-danger";
 }
 
 interface RescueRecipeCardProps {
@@ -28,15 +33,19 @@ interface RescueRecipeCardProps {
 function RescueRecipeCard({ recipe, expiringNames }: RescueRecipeCardProps) {
   return (
     <div className="rounded-2xl bg-surface shadow-md p-5 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg">
-      <h3 className="font-display text-2xl leading-tight text-primary">{recipe.name}</h3>
-      <p className="text-sm text-text-muted line-clamp-3">{recipe.description}</p>
+      <h3 className="font-display text-2xl leading-tight text-primary">
+        {recipe.name}
+      </h3>
+      <p className="text-sm text-text-muted line-clamp-3">
+        {recipe.description}
+      </p>
       {recipe.uses_items.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {recipe.uses_items.map((name) => {
             const matches = expiringNames.has(name);
             const pillClass = matches
-              ? 'bg-expiry-danger/10 text-expiry-danger'
-              : 'bg-surface-subtle text-text-muted';
+              ? "bg-expiry-danger/10 text-expiry-danger"
+              : "bg-surface-subtle text-text-muted";
             return (
               <span
                 key={name}
@@ -87,22 +96,26 @@ function RescueSkeletonCard() {
 interface StatCardProps {
   value: number;
   label: string;
-  tone?: 'default' | 'danger' | 'warning' | 'safe';
+  tone?: "default" | "danger" | "warning" | "safe";
 }
 
-function StatCard({ value, label, tone = 'default' }: StatCardProps) {
+function StatCard({ value, label, tone = "default" }: StatCardProps) {
   const toneClass =
-    tone === 'danger'
-      ? 'text-[color:var(--color-expiry-danger)]'
-      : tone === 'warning'
-        ? 'text-[color:var(--color-expiry-warning)]'
-        : tone === 'safe'
-          ? 'text-[color:var(--color-expiry-safe)]'
-          : 'text-text-primary';
+    tone === "danger"
+      ? "text-[color:var(--color-expiry-danger)]"
+      : tone === "warning"
+        ? "text-[color:var(--color-expiry-warning)]"
+        : tone === "safe"
+          ? "text-[color:var(--color-expiry-safe)]"
+          : "text-text-primary";
   return (
     <Card className="!p-4 text-center">
-      <p className={`font-display text-5xl leading-none ${toneClass}`}>{value}</p>
-      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-text-muted">{label}</p>
+      <p className={`font-display text-5xl leading-none ${toneClass}`}>
+        {value}
+      </p>
+      <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-text-muted">
+        {label}
+      </p>
     </Card>
   );
 }
@@ -114,11 +127,11 @@ export default function DashboardPage() {
     isError: householdsError,
     refetch: refetchHouseholds,
   } = useHouseholds();
-  const [selectedHouseholdId, setSelectedHouseholdId] = useState<string>('');
+  const [selectedHouseholdId, setSelectedHouseholdId] = useState<string>("");
   const [editItem, setEditItem] = useState<PantryItem | null>(null);
-  const [editFormError, setEditFormError] = useState('');
+  const [editFormError, setEditFormError] = useState("");
 
-  const householdId = selectedHouseholdId || households?.[0]?.id || '';
+  const householdId = selectedHouseholdId || households?.[0]?.id || "";
   const {
     grouped,
     isLoading: itemsLoading,
@@ -151,7 +164,9 @@ export default function DashboardPage() {
         icon={<Users className="h-10 w-10" />}
         title="Couldn't load your households"
         description="Something went wrong fetching your households. Check your connection and try again."
-        action={<Button onClick={() => void refetchHouseholds()}>Try again</Button>}
+        action={
+          <Button onClick={() => void refetchHouseholds()}>Try again</Button>
+        }
       />
     );
   }
@@ -180,22 +195,23 @@ export default function DashboardPage() {
   let safeCount = 0;
   for (const it of allItems) {
     const u = getUrgency(it.expiry_date);
-    if (u === 'danger') dangerCount++;
-    else if (u === 'warning') warningCount++;
+    if (u === "danger") dangerCount++;
+    else if (u === "warning") warningCount++;
     else safeCount++;
   }
 
   const handleEditSubmit = (data: ItemCreate) => {
     if (editItem) {
-      setEditFormError('');
+      setEditFormError("");
       updateItem.mutate(
         { itemId: editItem.id, data },
         {
           onSuccess: () => {
             setEditItem(null);
-            setEditFormError('');
+            setEditFormError("");
           },
-          onError: () => setEditFormError("Couldn't save changes. Please try again."),
+          onError: () =>
+            setEditFormError("Couldn't save changes. Please try again."),
         },
       );
     }
@@ -206,11 +222,13 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="font-display text-4xl sm:text-5xl leading-none text-text-primary">Your fridge</h1>
+          <h1 className="font-display text-4xl sm:text-5xl leading-none text-text-primary">
+            Your fridge
+          </h1>
           <p className="mt-1 text-sm text-text-muted">
             {totalItems === 0
               ? "Nothing tracked yet — let's fix that."
-              : `Tracking ${totalItems} ${totalItems === 1 ? 'item' : 'items'}.`}
+              : `Tracking ${totalItems} ${totalItems === 1 ? "item" : "items"}.`}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -318,7 +336,9 @@ export default function DashboardPage() {
           icon={<Refrigerator className="h-10 w-10" />}
           title="Couldn't load your items"
           description="Something went wrong fetching the fridge contents."
-          action={<Button onClick={() => void refetchItems()}>Try again</Button>}
+          action={
+            <Button onClick={() => void refetchItems()}>Try again</Button>
+          }
         />
       ) : totalItems === 0 ? (
         <EmptyState
@@ -344,7 +364,7 @@ export default function DashboardPage() {
         isOpen={editItem !== null}
         onClose={() => {
           setEditItem(null);
-          setEditFormError('');
+          setEditFormError("");
         }}
         title="Edit item"
       >
@@ -363,7 +383,7 @@ export default function DashboardPage() {
               onSubmit={handleEditSubmit}
               onCancel={() => {
                 setEditItem(null);
-                setEditFormError('');
+                setEditFormError("");
               }}
               loading={updateItem.isPending}
             />

@@ -1,5 +1,5 @@
-import type { ItemCategory } from '@/types';
-import { DEFAULT_EXPIRY_DAYS, mapCategoryTags } from '@/utils/categoryMapping';
+import type { ItemCategory } from "@/types";
+import { DEFAULT_EXPIRY_DAYS, mapCategoryTags } from "@/utils/categoryMapping";
 
 export interface ProductInfo {
   name: string;
@@ -27,10 +27,12 @@ interface OpenFoodFactsResponse {
  * Returns `null` when the product is not found (OFF responds with `status: 0`).
  * Throws on network / parse errors so callers can show a retry UI.
  */
-export async function lookupBarcode(barcode: string): Promise<ProductInfo | null> {
+export async function lookupBarcode(
+  barcode: string,
+): Promise<ProductInfo | null> {
   const url = `https://world.openfoodfacts.org/api/v0/product/${encodeURIComponent(barcode)}.json`;
   const res = await fetch(url, {
-    headers: { Accept: 'application/json' },
+    headers: { Accept: "application/json" },
   });
   if (!res.ok) {
     throw new Error(`Open Food Facts request failed: ${res.status}`);
@@ -46,7 +48,7 @@ export async function lookupBarcode(barcode: string): Promise<ProductInfo | null
     (p.product_name && p.product_name.trim()) ||
     (p.generic_name && p.generic_name.trim()) ||
     (p.brands && p.brands.trim()) ||
-    '';
+    "";
 
   const category = mapCategoryTags(p.categories_tags);
   const imageUrl = p.image_front_url || p.image_url || undefined;

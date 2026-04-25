@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users } from 'lucide-react';
-import { useHouseholds } from '@/hooks/useHousehold';
-import { useAddItem } from '@/hooks/useItems';
-import ItemForm from '@/components/items/ItemForm';
-import Card from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import EmptyState from '@/components/ui/EmptyState';
-import type { ItemCreate } from '@/types';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft, Users } from "lucide-react";
+import { useHouseholds } from "@/hooks/useHousehold";
+import { useAddItem } from "@/hooks/useItems";
+import ItemForm from "@/components/items/ItemForm";
+import Card from "@/components/ui/Card";
+import Button from "@/components/ui/Button";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import EmptyState from "@/components/ui/EmptyState";
+import type { ItemCreate } from "@/types";
 
 export default function AddItemPage() {
   const navigate = useNavigate();
@@ -18,10 +18,10 @@ export default function AddItemPage() {
     isError: householdsError,
     refetch: refetchHouseholds,
   } = useHouseholds();
-  const [selectedId, setSelectedId] = useState('');
-  const [submitError, setSubmitError] = useState('');
+  const [selectedId, setSelectedId] = useState("");
+  const [submitError, setSubmitError] = useState("");
 
-  const householdId = selectedId || households?.[0]?.id || '';
+  const householdId = selectedId || households?.[0]?.id || "";
   const addItem = useAddItem(householdId);
 
   if (isLoading) {
@@ -38,7 +38,9 @@ export default function AddItemPage() {
         icon={<Users className="h-10 w-10" />}
         title="Couldn't load households"
         description="We couldn't fetch your households. Check your connection and try again."
-        action={<Button onClick={() => void refetchHouseholds()}>Try again</Button>}
+        action={
+          <Button onClick={() => void refetchHouseholds()}>Try again</Button>
+        }
       />
     );
   }
@@ -58,10 +60,11 @@ export default function AddItemPage() {
   }
 
   const handleSubmit = (data: ItemCreate) => {
-    setSubmitError('');
+    setSubmitError("");
     addItem.mutate(data, {
-      onSuccess: () => navigate('/app/dashboard'),
-      onError: () => setSubmitError("Couldn't add that item. Please try again."),
+      onSuccess: () => navigate("/app/dashboard"),
+      onError: () =>
+        setSubmitError("Couldn't add that item. Please try again."),
     });
   };
 
@@ -75,12 +78,16 @@ export default function AddItemPage() {
         >
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="font-display text-3xl sm:text-4xl leading-none text-text-primary">Add an item</h1>
+        <h1 className="font-display text-3xl sm:text-4xl leading-none text-text-primary">
+          Add an item
+        </h1>
       </div>
 
       {households.length > 1 && (
         <div className="mb-5">
-          <label className="mb-1.5 block text-sm font-semibold text-text-primary">Household</label>
+          <label className="mb-1.5 block text-sm font-semibold text-text-primary">
+            Household
+          </label>
           <select
             value={householdId}
             onChange={(e) => setSelectedId(e.target.value)}

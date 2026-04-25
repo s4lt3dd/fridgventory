@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { ChefHat, ExternalLink } from 'lucide-react';
-import { useHouseholds } from '@/hooks/useHousehold';
-import { useExpiringItems } from '@/hooks/useItems';
-import { useRecipeSuggestions } from '@/hooks/useRecipes';
-import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
-import EmptyState from '@/components/ui/EmptyState';
-import { getUrgency } from '@/utils/expiry';
+import { useState } from "react";
+import { ChefHat, ExternalLink } from "lucide-react";
+import { useHouseholds } from "@/hooks/useHousehold";
+import { useExpiringItems } from "@/hooks/useItems";
+import { useRecipeSuggestions } from "@/hooks/useRecipes";
+import Card from "@/components/ui/Card";
+import Badge from "@/components/ui/Badge";
+import Button from "@/components/ui/Button";
+import EmptyState from "@/components/ui/EmptyState";
+import { getUrgency } from "@/utils/expiry";
 
 function RecipeSkeleton() {
   return (
@@ -29,8 +29,8 @@ export default function RecipesPage() {
     isError: householdsError,
     refetch: refetchHouseholds,
   } = useHouseholds();
-  const [selectedId, setSelectedId] = useState('');
-  const householdId = selectedId || households?.[0]?.id || '';
+  const [selectedId, setSelectedId] = useState("");
+  const householdId = selectedId || households?.[0]?.id || "";
 
   const { data: expiringItems } = useExpiringItems(householdId);
   const {
@@ -46,7 +46,9 @@ export default function RecipesPage() {
         icon={<ChefHat className="h-10 w-10" />}
         title="Couldn't load households"
         description="Something went wrong. Try again in a moment."
-        action={<Button onClick={() => void refetchHouseholds()}>Try again</Button>}
+        action={
+          <Button onClick={() => void refetchHouseholds()}>Try again</Button>
+        }
       />
     );
   }
@@ -65,8 +67,12 @@ export default function RecipesPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="font-display text-4xl sm:text-5xl leading-none text-text-primary">Recipe ideas</h1>
-          <p className="mt-1 text-sm text-text-muted">Made with the things that need using up first.</p>
+          <h1 className="font-display text-4xl sm:text-5xl leading-none text-text-primary">
+            Recipe ideas
+          </h1>
+          <p className="mt-1 text-sm text-text-muted">
+            Made with the things that need using up first.
+          </p>
         </div>
         {households && households.length > 1 && (
           <select
@@ -98,7 +104,9 @@ export default function RecipesPage() {
                   key={item.id}
                   className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-sm shadow-sm"
                 >
-                  <span className="font-semibold text-text-primary">{item.name}</span>
+                  <span className="font-semibold text-text-primary">
+                    {item.name}
+                  </span>
                   <Badge urgency={u} expiryDate={item.expiry_date} />
                 </span>
               );
@@ -116,8 +124,14 @@ export default function RecipesPage() {
         </div>
       ) : isError ? (
         <Card className="text-center">
-          <p className="mb-3 text-text-muted">Recipe suggestions unavailable right now.</p>
-          <Button size="sm" variant="secondary" onClick={() => void refetchRecipes()}>
+          <p className="mb-3 text-text-muted">
+            Recipe suggestions unavailable right now.
+          </p>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => void refetchRecipes()}
+          >
             Try again
           </Button>
         </Card>
@@ -139,22 +153,27 @@ export default function RecipesPage() {
                 />
               )}
               <div className="p-4">
-                <h3 className="text-sm font-semibold text-text-primary">{recipe.name}</h3>
+                <h3 className="text-sm font-semibold text-text-primary">
+                  {recipe.name}
+                </h3>
                 {recipe.category && (
-                  <p className="mt-0.5 text-xs text-text-muted">{recipe.category}</p>
+                  <p className="mt-0.5 text-xs text-text-muted">
+                    {recipe.category}
+                  </p>
                 )}
-                {recipe.matched_ingredients && recipe.matched_ingredients.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {recipe.matched_ingredients.map((ing: string) => (
-                      <span
-                        key={ing}
-                        className="rounded-full bg-[color:var(--color-expiry-safe)]/10 px-2 py-0.5 text-xs font-semibold text-[color:var(--color-expiry-safe)]"
-                      >
-                        {ing}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                {recipe.matched_ingredients &&
+                  recipe.matched_ingredients.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {recipe.matched_ingredients.map((ing: string) => (
+                        <span
+                          key={ing}
+                          className="rounded-full bg-[color:var(--color-expiry-safe)]/10 px-2 py-0.5 text-xs font-semibold text-[color:var(--color-expiry-safe)]"
+                        >
+                          {ing}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 {recipe.source_url && (
                   <a
                     href={recipe.source_url}

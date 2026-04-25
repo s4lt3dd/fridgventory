@@ -5,7 +5,7 @@
 
 export function isValidEmail(value: string): boolean {
   const v = value.trim();
-  return v.length > 0 && v.includes('@') && v.indexOf('@') < v.length - 1;
+  return v.length > 0 && v.includes("@") && v.indexOf("@") < v.length - 1;
 }
 
 export function isValidPassword(value: string): boolean {
@@ -20,7 +20,7 @@ export function isNotPastDate(value: string): boolean {
   if (!value) return false;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const parts = value.split('-').map(Number);
+  const parts = value.split("-").map(Number);
   if (parts.length !== 3 || parts.some(Number.isNaN)) return false;
   const [y, m, d] = parts;
   const date = new Date(y, m - 1, d);
@@ -29,6 +29,6 @@ export function isNotPastDate(value: string): boolean {
 }
 
 export function isPositiveQuantity(value: string | number): boolean {
-  const n = typeof value === 'number' ? value : Number(value);
+  const n = typeof value === "number" ? value : Number(value);
   return Number.isFinite(n) && n > 0;
 }

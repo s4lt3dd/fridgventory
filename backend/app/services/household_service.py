@@ -95,10 +95,10 @@ class HouseholdService:
             household_id=str(household.id),
         )
 
-        # Expire identity-map cache so the reload below sees the new member.
-        # Without this, get_by_id returns the cached Household from
-        # get_by_invite_token above (members already loaded, stale).
-        self.db.expire_all()
+        # Detach the cached household so the reload below re-queries with
+        # fresh members. Without this, get_by_id returns the cached Household
+        # from get_by_invite_token above (members loaded eagerly then, stale now).
+        self.db.expunge(household)
 
         # Reload with updated members
         updated = await self.household_repo.get_by_id(household.id)

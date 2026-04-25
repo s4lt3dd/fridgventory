@@ -4,7 +4,7 @@ import {
   format,
   isValid,
   startOfDay,
-} from 'date-fns';
+} from "date-fns";
 
 /**
  * Returns the number of calendar days from today to the given expiry date.
@@ -20,20 +20,20 @@ export function daysUntilExpiry(expiryDate: string): number {
  * Formats an ISO date string to a human-readable date (e.g. "Apr 5, 2025").
  */
 export function formatDate(dateString: string): string {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = parseISO(dateString);
   if (!isValid(date)) return dateString;
-  return format(date, 'MMM d, yyyy');
+  return format(date, "MMM d, yyyy");
 }
 
 /**
  * Formats an ISO date string to a short date (e.g. "Apr 5").
  */
 export function formatShortDate(dateString: string): string {
-  if (!dateString) return '';
+  if (!dateString) return "";
   const date = parseISO(dateString);
   if (!isValid(date)) return dateString;
-  return format(date, 'MMM d');
+  return format(date, "MMM d");
 }
 
 /**
@@ -43,10 +43,10 @@ export function expiryLabel(expiryDate: string): string {
   const days = daysUntilExpiry(expiryDate);
   if (days < 0) {
     const abs = Math.abs(days);
-    return abs === 1 ? 'Expired yesterday' : `Expired ${abs} days ago`;
+    return abs === 1 ? "Expired yesterday" : `Expired ${abs} days ago`;
   }
-  if (days === 0) return 'Expires today';
-  if (days === 1) return 'Expires tomorrow';
+  if (days === 0) return "Expires today";
+  if (days === 1) return "Expires tomorrow";
   return `Expires in ${days} days`;
 }
 
@@ -54,7 +54,7 @@ export function expiryLabel(expiryDate: string): string {
  * Returns today's date in YYYY-MM-DD format (for date inputs).
  */
 export function todayInputValue(): string {
-  return format(new Date(), 'yyyy-MM-dd');
+  return format(new Date(), "yyyy-MM-dd");
 }
 
 /**
@@ -63,5 +63,5 @@ export function todayInputValue(): string {
 export function futureDateInputValue(daysFromNow: number): string {
   const d = new Date();
   d.setDate(d.getDate() + daysFromNow);
-  return format(d, 'yyyy-MM-dd');
+  return format(d, "yyyy-MM-dd");
 }

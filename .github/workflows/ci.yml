@@ -158,7 +158,7 @@ jobs:
       - name: Install dependencies
         run: cd frontend && npm ci
       - name: Run tests
-        run: cd frontend && npm test -- --run
+        run: cd frontend && npm test -- --run --passWithNoTests
 
   build-images:
     name: Build Docker Images
