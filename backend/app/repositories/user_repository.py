@@ -17,15 +17,11 @@ class UserRepository:
         return result.scalar_one_or_none()
 
     async def get_by_email(self, email: str) -> User | None:
-        result = await self.db.execute(
-            select(User).where(User.email == email.lower())
-        )
+        result = await self.db.execute(select(User).where(User.email == email.lower()))
         return result.scalar_one_or_none()
 
     async def get_by_username(self, username: str) -> User | None:
-        result = await self.db.execute(
-            select(User).where(User.username == username)
-        )
+        result = await self.db.execute(select(User).where(User.username == username))
         return result.scalar_one_or_none()
 
     async def create(
@@ -71,9 +67,7 @@ class UserRepository:
         return refresh_token
 
     async def get_refresh_token(self, token: str) -> RefreshToken | None:
-        result = await self.db.execute(
-            select(RefreshToken).where(RefreshToken.token == token)
-        )
+        result = await self.db.execute(select(RefreshToken).where(RefreshToken.token == token))
         return result.scalar_one_or_none()
 
     async def revoke_refresh_token(self, token: str) -> None:

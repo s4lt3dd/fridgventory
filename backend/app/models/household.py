@@ -11,13 +11,9 @@ from app.database import Base
 class Household(Base):
     __tablename__ = "households"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
-    invite_token: Mapped[str] = mapped_column(
-        String(64), unique=True, nullable=False, index=True
-    )
+    invite_token: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -43,13 +39,9 @@ class Household(Base):
 class HouseholdMember(Base):
     __tablename__ = "household_members"
 
-    __table_args__ = (
-        UniqueConstraint("household_id", "user_id", name="uq_household_user"),
-    )
+    __table_args__ = (UniqueConstraint("household_id", "user_id", name="uq_household_user"),)
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("households.id", ondelete="CASCADE"),
@@ -78,4 +70,7 @@ class HouseholdMember(Base):
     )
 
     def __repr__(self) -> str:
-        return f"<HouseholdMember household={self.household_id} user={self.user_id} role={self.role}>"
+        return (
+            f"<HouseholdMember household={self.household_id} "
+            f"user={self.user_id} role={self.role}>"
+        )

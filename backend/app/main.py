@@ -1,17 +1,17 @@
 """FridgeCheck API — FastAPI application entry point."""
 
 import uuid
-from contextlib import asynccontextmanager
 from collections.abc import AsyncGenerator
+from contextlib import asynccontextmanager
 
 import structlog
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from redis.asyncio import from_url as redis_from_url
 
+from app.api.v1.routes import auth, households, items, recipes
 from app.config import settings
-from app.api.v1.routes import auth, items, households, recipes
 
 # ---------------------------------------------------------------------------
 # Structlog configuration
@@ -146,8 +146,9 @@ async def health_check(request: Request) -> dict:
 
     # Check database
     try:
-        from app.database import engine
         from sqlalchemy import text
+
+        from app.database import engine
 
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))

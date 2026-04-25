@@ -4,13 +4,10 @@ import pytest
 from httpx import AsyncClient
 
 from app.models.household import Household
-from app.models.user import User
 
 
 @pytest.mark.asyncio
-async def test_create_household(
-    client: AsyncClient, auth_headers: dict[str, str]
-) -> None:
+async def test_create_household(client: AsyncClient, auth_headers: dict[str, str]) -> None:
     response = await client.post(
         "/api/v1/households",
         headers=auth_headers,

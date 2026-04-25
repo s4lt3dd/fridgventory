@@ -52,17 +52,16 @@ def _build_user_prompt(items: list[dict[str, Any]]) -> str:
     for it in items:
         days = it["days_until_expiry"]
         when = (
-            "expired" if days < 0
-            else "today" if days == 0
-            else "tomorrow" if days == 1
+            "expired"
+            if days < 0
+            else "today"
+            if days == 0
+            else "tomorrow"
+            if days == 1
             else f"in {days} days"
         )
-        lines.append(
-            f"- {it['name']} ({it['quantity']} {it['unit']}) — expires {when}"
-        )
-    lines.append(
-        "\nSuggest 3-5 rescue recipes as JSON per the schema in the system prompt."
-    )
+        lines.append(f"- {it['name']} ({it['quantity']} {it['unit']}) — expires {when}")
+    lines.append("\nSuggest 3-5 rescue recipes as JSON per the schema in the system prompt.")
     return "\n".join(lines)
 
 

@@ -4,21 +4,31 @@ import React, {
   useEffect,
   useMemo,
   useState,
-} from 'react';
-import { useQueryClient } from '@tanstack/react-query';
-import { authApi } from '@/api/auth';
-import { setTokens, clearTokens, getRefreshToken, getAccessToken } from '@/api/client';
-import { User } from '@/types';
+} from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { authApi } from "@/api/auth";
+import {
+  setTokens,
+  clearTokens,
+  getRefreshToken,
+  getAccessToken,
+} from "@/api/client";
+import { User } from "@/types";
 
 interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, username: string, password: string) => Promise<void>;
+  register: (
+    email: string,
+    username: string,
+    password: string,
+  ) => Promise<void>;
   logout: () => Promise<void>;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
 interface AuthProviderProps {
@@ -67,16 +77,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     void restoreSession();
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    // Clear any cached queries from a previous session before signing in as
-    // a new user, otherwise stale data (households, items…) keyed without a
-    // user id can briefly bleed across accounts.
-    queryClient.clear();
-    const tokens = await authApi.login(email, password);
-    setTokens(tokens.access_token, tokens.refresh_token);
-    const userData = await authApi.me();
-    setUser(userData);
-  }, [queryClient]);
+  const login = useCallback(
+    async (email: string, password: string) => {
+      // Clear any cached queries from a previous session before signing in as
+      // a new user, otherwise stale data (households, items…) keyed without a
+      // user id can briefly bleed across accounts.
+      queryClient.clear();
+      const tokens = await authApi.login(email, password);
+      setTokens(tokens.access_token, tokens.refresh_token);
+      const userData = await authApi.me();
+      setUser(userData);
+    },
+    [queryClient],
+  );
 
   const register = useCallback(
     async (email: string, username: string, password: string) => {
@@ -86,7 +99,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const userData = await authApi.me();
       setUser(userData);
     },
-    [queryClient]
+    [queryClient],
   );
 
   const logout = useCallback(async () => {
@@ -113,7 +126,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       register,
       logout,
     }),
-    [user, isLoading, login, register, logout]
+    [user, isLoading, login, register, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

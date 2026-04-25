@@ -1,32 +1,40 @@
-import { useEffect, useRef, useState } from 'react';
-import { BrowserMultiFormatReader } from '@zxing/library';
-import { X, CameraOff, AlertTriangle } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+import { useEffect, useRef, useState } from "react";
+import { BrowserMultiFormatReader } from "@zxing/library";
+import { X, CameraOff, AlertTriangle } from "lucide-react";
+import Button from "@/components/ui/Button";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
-type ScannerState = 'requesting' | 'scanning' | 'denied' | 'error' | 'unsupported';
+type ScannerState =
+  | "requesting"
+  | "scanning"
+  | "denied"
+  | "error"
+  | "unsupported";
 
 interface BarcodeScannerProps {
   onDetected: (barcode: string) => void;
   onClose: () => void;
 }
 
-export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerProps) {
+export default function BarcodeScanner({
+  onDetected,
+  onClose,
+}: BarcodeScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const readerRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const detectedRef = useRef(false);
-  const [state, setState] = useState<ScannerState>('requesting');
-  const [errorMessage, setErrorMessage] = useState('');
+  const [state, setState] = useState<ScannerState>("requesting");
+  const [errorMessage, setErrorMessage] = useState("");
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return;
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(mq.matches);
     const handler = (e: MediaQueryListEvent) => setReducedMotion(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
   }, []);
 
   const stopStream = () => {
@@ -49,17 +57,20 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
 
   const start = async () => {
     detectedRef.current = false;
-    setErrorMessage('');
-    setState('requesting');
+    setErrorMessage("");
+    setState("requesting");
 
-    if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
-      setState('unsupported');
+    if (
+      !navigator.mediaDevices ||
+      typeof navigator.mediaDevices.getUserMedia !== "function"
+    ) {
+      setState("unsupported");
       return;
     }
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: { facingMode: "environment" },
         audio: false,
       });
       streamRef.current = stream;
@@ -71,7 +82,7 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
 
       const reader = new BrowserMultiFormatReader();
       readerRef.current = reader;
-      setState('scanning');
+      setState("scanning");
 
       await reader.decodeFromStream(stream, videoRef.current, (result) => {
         if (result && !detectedRef.current) {
@@ -85,14 +96,18 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
       });
     } catch (err) {
       const name = (err as { name?: string })?.name;
-      if (name === 'NotAllowedError' || name === 'SecurityError') {
-        setState('denied');
-      } else if (name === 'NotFoundError' || name === 'OverconstrainedError' || name === 'DevicesNotFoundError') {
-        setErrorMessage('No camera was found on this device.');
-        setState('error');
+      if (name === "NotAllowedError" || name === "SecurityError") {
+        setState("denied");
+      } else if (
+        name === "NotFoundError" ||
+        name === "OverconstrainedError" ||
+        name === "DevicesNotFoundError"
+      ) {
+        setErrorMessage("No camera was found on this device.");
+        setState("error");
       } else {
-        setErrorMessage((err as Error)?.message || 'Unknown camera error.');
-        setState('error');
+        setErrorMessage((err as Error)?.message || "Unknown camera error.");
+        setState("error");
       }
     }
   };
@@ -110,7 +125,7 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
     onClose();
   };
 
-  const reticleAnim = reducedMotion ? '' : 'animate-pulse';
+  const reticleAnim = reducedMotion ? "" : "animate-pulse";
 
   return (
     <div
@@ -120,7 +135,7 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
       className="fixed inset-0 z-50 bg-black text-white"
     >
       {/* Video */}
-      {(state === 'scanning' || state === 'requesting') && (
+      {(state === "scanning" || state === "requesting") && (
         <video
           ref={videoRef}
           playsInline
@@ -131,7 +146,7 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
       )}
 
       {/* Dimming overlay for non-scanning states */}
-      {state !== 'scanning' && (
+      {state !== "scanning" && (
         <div className="absolute inset-0 bg-black/80" aria-hidden="true" />
       )}
 
@@ -149,13 +164,13 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
       </div>
 
       {/* Reticle */}
-      {state === 'scanning' && (
+      {state === "scanning" && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div
             className={`relative rounded-2xl border border-white/40 ${reticleAnim}`}
             style={{
-              width: 'min(70vw, 320px)',
-              height: 'min(70vw, 320px)',
+              width: "min(70vw, 320px)",
+              height: "min(70vw, 320px)",
             }}
           >
             {/* Corner accents in gold */}
@@ -180,7 +195,7 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
       )}
 
       {/* Bottom hint */}
-      {state === 'scanning' && (
+      {state === "scanning" && (
         <div className="absolute bottom-0 left-0 right-0 z-10 px-4 pb-[max(env(safe-area-inset-bottom),1.5rem)] text-center">
           <p className="mx-auto max-w-xs rounded-xl bg-black/50 px-4 py-2 text-sm font-semibold backdrop-blur">
             Point at the product&apos;s barcode
@@ -189,7 +204,7 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
       )}
 
       {/* Requesting */}
-      {state === 'requesting' && (
+      {state === "requesting" && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 text-center">
           <LoadingSpinner size="lg" className="text-white" />
           <p className="text-sm font-semibold">Requesting camera...</p>
@@ -197,23 +212,29 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
       )}
 
       {/* Denied */}
-      {state === 'denied' && (
+      {state === "denied" && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 px-6 text-center">
           <CameraOff className="h-12 w-12 text-accent" aria-hidden="true" />
           <p className="max-w-sm text-base font-semibold">
             Camera access denied. Enable it in browser settings.
           </p>
-          <Button variant="secondary" onClick={handleClose} className="!border-white !text-white hover:!bg-white hover:!text-black">
+          <Button
+            variant="secondary"
+            onClick={handleClose}
+            className="!border-white !text-white hover:!bg-white hover:!text-black"
+          >
             Close
           </Button>
         </div>
       )}
 
       {/* Error */}
-      {state === 'error' && (
+      {state === "error" && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 px-6 text-center">
           <AlertTriangle className="h-12 w-12 text-accent" aria-hidden="true" />
-          <p className="max-w-sm text-base font-semibold">Couldn&apos;t start camera</p>
+          <p className="max-w-sm text-base font-semibold">
+            Couldn&apos;t start camera
+          </p>
           {errorMessage && (
             <p className="max-w-sm text-sm text-white/80">{errorMessage}</p>
           )}
@@ -231,11 +252,12 @@ export default function BarcodeScanner({ onDetected, onClose }: BarcodeScannerPr
       )}
 
       {/* Unsupported */}
-      {state === 'unsupported' && (
+      {state === "unsupported" && (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 px-6 text-center">
           <CameraOff className="h-12 w-12 text-accent" aria-hidden="true" />
           <p className="max-w-sm text-base font-semibold">
-            Your browser doesn&apos;t support camera scanning — enter the item manually.
+            Your browser doesn&apos;t support camera scanning — enter the item
+            manually.
           </p>
           <Button
             variant="secondary"

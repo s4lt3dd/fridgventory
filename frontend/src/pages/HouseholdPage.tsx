@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Users, UserPlus, Plus } from 'lucide-react';
+import { useState } from "react";
+import { Users, UserPlus, Plus } from "lucide-react";
 import {
   useHouseholds,
   useCreateHousehold,
@@ -7,16 +7,16 @@ import {
   useHouseholdMembers,
   useInviteLink,
   useRegenerateInvite,
-} from '@/hooks/useHousehold';
-import { useAuth } from '@/hooks/useAuth';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import Card from '@/components/ui/Card';
-import Modal from '@/components/ui/Modal';
-import EmptyState from '@/components/ui/EmptyState';
-import HouseholdCard from '@/components/households/HouseholdCard';
-import InviteLink from '@/components/households/InviteLink';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
+} from "@/hooks/useHousehold";
+import { useAuth } from "@/hooks/useAuth";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import Card from "@/components/ui/Card";
+import Modal from "@/components/ui/Modal";
+import EmptyState from "@/components/ui/EmptyState";
+import HouseholdCard from "@/components/households/HouseholdCard";
+import InviteLink from "@/components/households/InviteLink";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export default function HouseholdPage() {
   const { user } = useAuth();
@@ -28,17 +28,17 @@ export default function HouseholdPage() {
   } = useHouseholds();
   const createHousehold = useCreateHousehold();
   const joinHousehold = useJoinHousehold();
-  const [selectedId, setSelectedId] = useState<string>('');
+  const [selectedId, setSelectedId] = useState<string>("");
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newNameError, setNewNameError] = useState('');
-  const [createError, setCreateError] = useState('');
-  const [joinToken, setJoinToken] = useState('');
-  const [joinTokenError, setJoinTokenError] = useState('');
-  const [joinError, setJoinError] = useState('');
+  const [newName, setNewName] = useState("");
+  const [newNameError, setNewNameError] = useState("");
+  const [createError, setCreateError] = useState("");
+  const [joinToken, setJoinToken] = useState("");
+  const [joinTokenError, setJoinTokenError] = useState("");
+  const [joinError, setJoinError] = useState("");
 
-  const activeId = selectedId || households?.[0]?.id || '';
+  const activeId = selectedId || households?.[0]?.id || "";
   const {
     data: members,
     isLoading: membersLoading,
@@ -53,7 +53,7 @@ export default function HouseholdPage() {
   const regenerateInvite = useRegenerateInvite(activeId);
 
   const currentMember = members?.find((m) => m.user_id === user?.id);
-  const isOwner = currentMember?.role === 'owner';
+  const isOwner = currentMember?.role === "owner";
 
   if (isLoading) {
     return (
@@ -69,7 +69,9 @@ export default function HouseholdPage() {
         icon={<Users className="h-10 w-10" />}
         title="Couldn't load households"
         description="Something went wrong fetching your households. Try again in a moment."
-        action={<Button onClick={() => void refetchHouseholds()}>Try again</Button>}
+        action={
+          <Button onClick={() => void refetchHouseholds()}>Try again</Button>
+        }
       />
     );
   }
@@ -77,34 +79,36 @@ export default function HouseholdPage() {
   const handleCreate = () => {
     const trimmed = newName.trim();
     if (!trimmed) {
-      setNewNameError('Please give the household a name.');
+      setNewNameError("Please give the household a name.");
       return;
     }
-    setNewNameError('');
-    setCreateError('');
+    setNewNameError("");
+    setCreateError("");
     createHousehold.mutate(trimmed, {
       onSuccess: () => {
         setShowCreate(false);
-        setNewName('');
+        setNewName("");
       },
-      onError: () => setCreateError("Couldn't create the household. Please try again."),
+      onError: () =>
+        setCreateError("Couldn't create the household. Please try again."),
     });
   };
 
   const handleJoin = () => {
     const trimmed = joinToken.trim();
     if (!trimmed) {
-      setJoinTokenError('Please paste an invite token.');
+      setJoinTokenError("Please paste an invite token.");
       return;
     }
-    setJoinTokenError('');
-    setJoinError('');
+    setJoinTokenError("");
+    setJoinError("");
     joinHousehold.mutate(trimmed, {
       onSuccess: () => {
         setShowJoin(false);
-        setJoinToken('');
+        setJoinToken("");
       },
-      onError: () => setJoinError("That token didn't work. Double-check it and try again."),
+      onError: () =>
+        setJoinError("That token didn't work. Double-check it and try again."),
     });
   };
 
@@ -112,11 +116,19 @@ export default function HouseholdPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="font-display text-4xl sm:text-5xl leading-none text-text-primary">Households</h1>
-          <p className="mt-1 text-sm text-text-muted">Share a fridge with the people you live with.</p>
+          <h1 className="font-display text-4xl sm:text-5xl leading-none text-text-primary">
+            Households
+          </h1>
+          <p className="mt-1 text-sm text-text-muted">
+            Share a fridge with the people you live with.
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" size="sm" onClick={() => setShowJoin(true)}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowJoin(true)}
+          >
             <UserPlus className="h-4 w-4" />
             Join
           </Button>
@@ -161,8 +173,14 @@ export default function HouseholdPage() {
               {inviteError ? (
                 <Card>
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm text-text-muted">Couldn't load the invite link.</p>
-                    <Button size="sm" variant="secondary" onClick={() => void refetchInvite()}>
+                    <p className="text-sm text-text-muted">
+                      Couldn't load the invite link.
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => void refetchInvite()}
+                    >
                       Try again
                     </Button>
                   </div>
@@ -189,13 +207,21 @@ export default function HouseholdPage() {
               )}
 
               <Card>
-                <h3 className="mb-3 text-sm font-semibold text-text-primary">Members</h3>
+                <h3 className="mb-3 text-sm font-semibold text-text-primary">
+                  Members
+                </h3>
                 {membersLoading ? (
                   <LoadingSpinner size="sm" />
                 ) : membersError ? (
                   <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-sm text-text-muted">Couldn't load members.</p>
-                    <Button size="sm" variant="secondary" onClick={() => void refetchMembers()}>
+                    <p className="text-sm text-text-muted">
+                      Couldn't load members.
+                    </p>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => void refetchMembers()}
+                    >
                       Try again
                     </Button>
                   </div>
@@ -213,7 +239,9 @@ export default function HouseholdPage() {
                             {m.username || m.email}
                           </p>
                           {m.email && m.username && (
-                            <p className="truncate text-xs text-text-muted">{m.email}</p>
+                            <p className="truncate text-xs text-text-muted">
+                              {m.email}
+                            </p>
                           )}
                         </div>
                         <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold capitalize text-primary">
@@ -234,8 +262,8 @@ export default function HouseholdPage() {
         isOpen={showCreate}
         onClose={() => {
           setShowCreate(false);
-          setNewNameError('');
-          setCreateError('');
+          setNewNameError("");
+          setCreateError("");
         }}
         title="Create household"
       >
@@ -253,7 +281,7 @@ export default function HouseholdPage() {
             value={newName}
             onChange={(e) => {
               setNewName(e.target.value);
-              if (newNameError) setNewNameError('');
+              if (newNameError) setNewNameError("");
             }}
             placeholder="e.g. The Smiths' Kitchen"
             error={newNameError}
@@ -275,8 +303,8 @@ export default function HouseholdPage() {
         isOpen={showJoin}
         onClose={() => {
           setShowJoin(false);
-          setJoinTokenError('');
-          setJoinError('');
+          setJoinTokenError("");
+          setJoinError("");
         }}
         title="Join household"
       >
@@ -294,7 +322,7 @@ export default function HouseholdPage() {
             value={joinToken}
             onChange={(e) => {
               setJoinToken(e.target.value);
-              if (joinTokenError) setJoinTokenError('');
+              if (joinTokenError) setJoinTokenError("");
             }}
             placeholder="Paste the invite token"
             hint="Get this from a household member."

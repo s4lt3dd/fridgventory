@@ -19,9 +19,7 @@ from app.services.recipe_service import RecipeService
 
 router = APIRouter()
 
-household_router = APIRouter(
-    prefix="/households/{household_id}/recipes", tags=["recipes"]
-)
+household_router = APIRouter(prefix="/households/{household_id}/recipes", tags=["recipes"])
 
 
 @household_router.get("", response_model=list[RecipeSuggestion])

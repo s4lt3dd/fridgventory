@@ -7,7 +7,6 @@ from httpx import AsyncClient
 
 from app.models.household import Household
 from app.models.item import PantryItem
-from app.models.user import User
 
 
 @pytest.mark.asyncio
@@ -93,9 +92,7 @@ async def test_delete_item(
     )
     data = list_resp.json()
     all_ids = [
-        item["id"]
-        for group in ["expired", "today", "this_week", "fresh"]
-        for item in data[group]
+        item["id"] for group in ["expired", "today", "this_week", "fresh"] for item in data[group]
     ]
     assert str(test_item.id) not in all_ids
 

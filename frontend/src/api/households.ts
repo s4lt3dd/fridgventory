@@ -1,14 +1,14 @@
-import { apiClient } from './client';
-import { Household, HouseholdMember, InviteLinkResponse } from '@/types';
+import { apiClient } from "./client";
+import { Household, HouseholdMember, InviteLinkResponse } from "@/types";
 
 export const householdsApi = {
   list: async (): Promise<Household[]> => {
-    const { data } = await apiClient.get<Household[]>('/households');
+    const { data } = await apiClient.get<Household[]>("/households");
     return data;
   },
 
   create: async (name: string): Promise<Household> => {
-    const { data } = await apiClient.post<Household>('/households', { name });
+    const { data } = await apiClient.post<Household>("/households", { name });
     return data;
   },
 
@@ -19,27 +19,27 @@ export const householdsApi = {
 
   getMembers: async (id: string): Promise<HouseholdMember[]> => {
     const { data } = await apiClient.get<HouseholdMember[]>(
-      `/households/${id}/members`
+      `/households/${id}/members`,
     );
     return data;
   },
 
   getInviteLink: async (id: string): Promise<InviteLinkResponse> => {
     const { data } = await apiClient.get<InviteLinkResponse>(
-      `/households/${id}/invite`
+      `/households/${id}/invite`,
     );
     return data;
   },
 
   regenerateInvite: async (id: string): Promise<InviteLinkResponse> => {
     const { data } = await apiClient.post<InviteLinkResponse>(
-      `/households/${id}/invite/regenerate`
+      `/households/${id}/invite/regenerate`,
     );
     return data;
   },
 
   join: async (inviteToken: string): Promise<Household> => {
-    const { data } = await apiClient.post<Household>('/households/join', {
+    const { data } = await apiClient.post<Household>("/households/join", {
       invite_token: inviteToken,
     });
     return data;

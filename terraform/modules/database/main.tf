@@ -36,9 +36,9 @@ resource "aws_db_instance" "main" {
   backup_window           = "03:00-04:00"
   maintenance_window      = "mon:04:00-mon:05:00"
 
-  multi_az               = var.multi_az
-  deletion_protection    = var.environment == "prod" ? true : false
-  skip_final_snapshot    = var.environment == "prod" ? false : true
+  multi_az                  = var.multi_az
+  deletion_protection       = var.environment == "prod" ? true : false
+  skip_final_snapshot       = var.environment == "prod" ? false : true
   final_snapshot_identifier = var.environment == "prod" ? "${var.project}-${var.environment}-final-snapshot" : null
 
   performance_insights_enabled = true

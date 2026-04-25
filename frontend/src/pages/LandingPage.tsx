@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   ScanLine,
   AlarmClock,
@@ -11,11 +11,11 @@ import {
   Github,
   Sparkles,
   ArrowRight,
-} from 'lucide-react';
-import Button from '@/components/ui/Button';
+} from "lucide-react";
+import Button from "@/components/ui/Button";
 
 /** Inline two-tone fridge logo (red body, gold handle) used in the top nav + footer. */
-function FridgeLogo({ className = 'h-7 w-7' }: { className?: string }) {
+function FridgeLogo({ className = "h-7 w-7" }: { className?: string }) {
   return (
     <svg
       viewBox="0 0 32 32"
@@ -24,11 +24,46 @@ function FridgeLogo({ className = 'h-7 w-7' }: { className?: string }) {
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <rect x="6" y="3" width="20" height="26" rx="3" fill="var(--color-primary)" />
-      <rect x="8" y="5" width="16" height="9" rx="1.5" fill="var(--color-surface)" />
-      <rect x="8" y="16" width="16" height="11" rx="1.5" fill="var(--color-surface)" />
-      <rect x="10" y="8" width="2" height="3.5" rx="1" fill="var(--color-accent)" />
-      <rect x="10" y="19" width="2" height="4" rx="1" fill="var(--color-accent)" />
+      <rect
+        x="6"
+        y="3"
+        width="20"
+        height="26"
+        rx="3"
+        fill="var(--color-primary)"
+      />
+      <rect
+        x="8"
+        y="5"
+        width="16"
+        height="9"
+        rx="1.5"
+        fill="var(--color-surface)"
+      />
+      <rect
+        x="8"
+        y="16"
+        width="16"
+        height="11"
+        rx="1.5"
+        fill="var(--color-surface)"
+      />
+      <rect
+        x="10"
+        y="8"
+        width="2"
+        height="3.5"
+        rx="1"
+        fill="var(--color-accent)"
+      />
+      <rect
+        x="10"
+        y="19"
+        width="2"
+        height="4"
+        rx="1"
+        fill="var(--color-accent)"
+      />
     </svg>
   );
 }
@@ -60,15 +95,50 @@ function HeroIllustration() {
 
       {/* Fridge body */}
       <g>
-        <rect x="155" y="90" width="190" height="310" rx="22" fill="url(#fridgeGrad)" />
+        <rect
+          x="155"
+          y="90"
+          width="190"
+          height="310"
+          rx="22"
+          fill="url(#fridgeGrad)"
+        />
         <rect x="170" y="105" width="160" height="115" rx="10" fill="#FFFFFF" />
         <rect x="170" y="230" width="160" height="155" rx="10" fill="#FFFFFF" />
         {/* Handles */}
-        <rect x="180" y="135" width="8" height="40" rx="4" fill="url(#goldGrad)" />
-        <rect x="180" y="260" width="8" height="55" rx="4" fill="url(#goldGrad)" />
+        <rect
+          x="180"
+          y="135"
+          width="8"
+          height="40"
+          rx="4"
+          fill="url(#goldGrad)"
+        />
+        <rect
+          x="180"
+          y="260"
+          width="8"
+          height="55"
+          rx="4"
+          fill="url(#goldGrad)"
+        />
         {/* Shelf lines */}
-        <line x1="180" y1="265" x2="320" y2="265" stroke="#FEF2F2" strokeWidth="2" />
-        <line x1="180" y1="320" x2="320" y2="320" stroke="#FEF2F2" strokeWidth="2" />
+        <line
+          x1="180"
+          y1="265"
+          x2="320"
+          y2="265"
+          stroke="#FEF2F2"
+          strokeWidth="2"
+        />
+        <line
+          x1="180"
+          y1="320"
+          x2="320"
+          y2="320"
+          stroke="#FEF2F2"
+          strokeWidth="2"
+        />
         {/* Contents inside top freezer */}
         <circle cx="210" cy="160" r="10" fill="#F87171" />
         <rect x="235" y="145" width="28" height="30" rx="4" fill="#FDE68A" />
@@ -85,7 +155,14 @@ function HeroIllustration() {
       {/* £730 badge */}
       <g>
         <circle cx="395" cy="155" r="58" fill="url(#goldGrad)" />
-        <circle cx="395" cy="155" r="58" fill="none" stroke="#FFFFFF" strokeWidth="4" />
+        <circle
+          cx="395"
+          cy="155"
+          r="58"
+          fill="none"
+          stroke="#FFFFFF"
+          strokeWidth="4"
+        />
         <text
           x="395"
           y="150"
@@ -114,8 +191,23 @@ function HeroIllustration() {
       {/* Floating apple with label */}
       <g>
         <circle cx="95" cy="200" r="26" fill="#DC2626" />
-        <path d="M95 176 Q100 168 108 170" stroke="#16A34A" strokeWidth="3" fill="none" strokeLinecap="round" />
-        <rect x="30" y="235" width="95" height="26" rx="13" fill="#FFFFFF" stroke="#FCA5A5" strokeWidth="2" />
+        <path
+          d="M95 176 Q100 168 108 170"
+          stroke="#16A34A"
+          strokeWidth="3"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <rect
+          x="30"
+          y="235"
+          width="95"
+          height="26"
+          rx="13"
+          fill="#FFFFFF"
+          stroke="#FCA5A5"
+          strokeWidth="2"
+        />
         <text
           x="77"
           y="253"
@@ -131,10 +223,32 @@ function HeroIllustration() {
 
       {/* Milk carton with label */}
       <g>
-        <path d="M100 340 L140 340 L140 335 L130 318 L110 318 L100 335 Z" fill="#FFFFFF" stroke="#CA8A04" strokeWidth="2" />
-        <rect x="106" y="342" width="28" height="38" fill="#FFFFFF" stroke="#CA8A04" strokeWidth="2" />
+        <path
+          d="M100 340 L140 340 L140 335 L130 318 L110 318 L100 335 Z"
+          fill="#FFFFFF"
+          stroke="#CA8A04"
+          strokeWidth="2"
+        />
+        <rect
+          x="106"
+          y="342"
+          width="28"
+          height="38"
+          fill="#FFFFFF"
+          stroke="#CA8A04"
+          strokeWidth="2"
+        />
         <rect x="110" y="352" width="20" height="6" fill="#CA8A04" />
-        <rect x="50" y="390" width="110" height="26" rx="13" fill="#FFFFFF" stroke="#FDE68A" strokeWidth="2" />
+        <rect
+          x="50"
+          y="390"
+          width="110"
+          height="26"
+          rx="13"
+          fill="#FFFFFF"
+          stroke="#FDE68A"
+          strokeWidth="2"
+        />
         <text
           x="105"
           y="408"
@@ -168,7 +282,14 @@ interface FeatureCardProps {
   iconColor: string;
 }
 
-function FeatureCard({ Icon, title, body, tint, iconBg, iconColor }: FeatureCardProps) {
+function FeatureCard({
+  Icon,
+  title,
+  body,
+  tint,
+  iconBg,
+  iconColor,
+}: FeatureCardProps) {
   return (
     <div
       className={`group rounded-3xl border border-primary/10 ${tint} p-8 shadow-lg transition-all duration-200 ease-out hover:-translate-y-1 hover:shadow-xl`}
@@ -178,7 +299,9 @@ function FeatureCard({ Icon, title, body, tint, iconBg, iconColor }: FeatureCard
       >
         <Icon className="h-7 w-7" />
       </div>
-      <h3 className="font-display text-4xl leading-none text-text-primary">{title}</h3>
+      <h3 className="font-display text-4xl leading-none text-text-primary">
+        {title}
+      </h3>
       <p className="mt-3 text-base text-text-muted">{body}</p>
     </div>
   );
@@ -193,8 +316,12 @@ interface StepProps {
 function Step({ number, title, body }: StepProps) {
   return (
     <div className="flex flex-1 flex-col items-start text-left md:items-center md:text-center">
-      <span className="font-display text-7xl leading-none text-primary">{number}</span>
-      <h3 className="mt-3 font-display text-4xl leading-none text-text-primary">{title}</h3>
+      <span className="font-display text-7xl leading-none text-primary">
+        {number}
+      </span>
+      <h3 className="mt-3 font-display text-4xl leading-none text-text-primary">
+        {title}
+      </h3>
       <p className="mt-2 max-w-xs text-base text-text-muted">{body}</p>
     </div>
   );
@@ -207,8 +334,8 @@ export default function LandingPage() {
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
     onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   const navLinks = (
@@ -243,14 +370,16 @@ export default function LandingPage() {
       <header
         className={`sticky top-0 z-40 w-full transition-all duration-200 ${
           scrolled
-            ? 'bg-surface/85 backdrop-blur-md shadow-sm border-b border-border'
-            : 'bg-transparent'
+            ? "bg-surface/85 backdrop-blur-md shadow-sm border-b border-border"
+            : "bg-transparent"
         }`}
       >
         <div className="mx-auto flex max-w-[1200px] items-center justify-between px-4 py-3 md:px-8">
           <Link to="/" className="flex items-center gap-2 cursor-pointer">
             <FridgeLogo className="h-8 w-8" />
-            <span className="font-display text-3xl leading-none text-primary">FridgeCheck</span>
+            <span className="font-display text-3xl leading-none text-primary">
+              FridgeCheck
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">{navLinks}</nav>
@@ -264,11 +393,15 @@ export default function LandingPage() {
           <button
             type="button"
             onClick={() => setMobileOpen((v) => !v)}
-            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
             aria-expanded={mobileOpen}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full text-primary transition-colors duration-150 hover:bg-primary/10 md:hidden cursor-pointer focus:outline-none focus-visible:ring-[3px] focus-visible:ring-primary/20"
           >
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            {mobileOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
           </button>
         </div>
 
@@ -296,8 +429,9 @@ export default function LandingPage() {
               Save £730 a year. One fridge at a time.
             </h1>
             <p className="mt-6 max-w-prose text-lg text-text-muted">
-              The average UK household bins that much food every year. FridgeCheck tracks what you
-              have, warns you before it expires, and suggests recipes for what's about to go off.
+              The average UK household bins that much food every year.
+              FridgeCheck tracks what you have, warns you before it expires, and
+              suggests recipes for what's about to go off.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -315,15 +449,17 @@ export default function LandingPage() {
             </div>
 
             <ul className="mt-8 flex flex-wrap gap-x-5 gap-y-2">
-              {['No credit card', 'Works on any device', 'Privacy-first'].map((chip) => (
-                <li
-                  key={chip}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-text-muted"
-                >
-                  <Check className="h-4 w-4 text-[color:var(--color-accent)]" />
-                  {chip}
-                </li>
-              ))}
+              {["No credit card", "Works on any device", "Privacy-first"].map(
+                (chip) => (
+                  <li
+                    key={chip}
+                    className="inline-flex items-center gap-1.5 text-sm font-semibold text-text-muted"
+                  >
+                    <Check className="h-4 w-4 text-[color:var(--color-accent)]" />
+                    {chip}
+                  </li>
+                ),
+              )}
             </ul>
           </div>
 
@@ -344,27 +480,27 @@ export default function LandingPage() {
               Food waste is expensive — and invisible.
             </h2>
             <p className="mt-5 text-lg text-text-muted">
-              You don't notice the cost because it happens one forgotten courgette at a time. The
-              numbers, though, are brutal.
+              You don't notice the cost because it happens one forgotten
+              courgette at a time. The numbers, though, are brutal.
             </p>
           </div>
 
           <div className="mt-14 grid gap-6 md:grid-cols-3">
             {[
               {
-                stat: '£730',
-                copy: 'wasted per UK household every year',
-                source: 'Source: WRAP',
+                stat: "£730",
+                copy: "wasted per UK household every year",
+                source: "Source: WRAP",
               },
               {
-                stat: '4.5M tonnes',
-                copy: 'of edible food binned annually in the UK',
-                source: 'Source: WRAP, UK Food Waste Report',
+                stat: "4.5M tonnes",
+                copy: "of edible food binned annually in the UK",
+                source: "Source: WRAP, UK Food Waste Report",
               },
               {
-                stat: '60%',
-                copy: 'of that waste is avoidable — mostly expired items',
-                source: 'Source: WRAP household study',
+                stat: "60%",
+                copy: "of that waste is avoidable — mostly expired items",
+                source: "Source: WRAP household study",
               },
             ].map((s) => (
               <div
@@ -374,7 +510,9 @@ export default function LandingPage() {
                 <p className="font-display text-6xl leading-none text-[color:var(--color-accent)] md:text-7xl">
                   {s.stat}
                 </p>
-                <p className="mt-4 text-base font-semibold text-text-primary">{s.copy}</p>
+                <p className="mt-4 text-base font-semibold text-text-primary">
+                  {s.copy}
+                </p>
                 <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
                   {s.source}
                 </p>
@@ -504,7 +642,8 @@ export default function LandingPage() {
             Ready to stop throwing money in the bin?
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-lg text-white/85">
-            Takes 30 seconds to sign up. No credit card. Cancel anytime — though you won't want to.
+            Takes 30 seconds to sign up. No credit card. Cancel anytime — though
+            you won't want to.
           </p>
 
           <div className="mt-8 flex flex-wrap justify-center gap-3">
@@ -531,10 +670,13 @@ export default function LandingPage() {
             <div className="md:col-span-1">
               <div className="flex items-center gap-2">
                 <FridgeLogo className="h-7 w-7" />
-                <span className="font-display text-3xl leading-none text-primary">FridgeCheck</span>
+                <span className="font-display text-3xl leading-none text-primary">
+                  FridgeCheck
+                </span>
               </div>
               <p className="mt-3 max-w-xs text-sm text-text-muted">
-                A small app fighting a big, invisible problem — one expiry date at a time.
+                A small app fighting a big, invisible problem — one expiry date
+                at a time.
               </p>
             </div>
 
@@ -621,7 +763,9 @@ export default function LandingPage() {
           </div>
 
           <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-6 md:flex-row md:items-center">
-            <p className="text-xs font-semibold text-text-muted">© 2026 FridgeCheck</p>
+            <p className="text-xs font-semibold text-text-muted">
+              © 2026 FridgeCheck
+            </p>
             <p className="inline-flex items-center gap-2 rounded-full border border-primary/15 bg-surface px-3 py-1 text-xs font-semibold text-text-muted">
               <Sparkles className="h-3.5 w-3.5 text-[color:var(--color-accent)]" />
               Built with React, Tailwind & Claude

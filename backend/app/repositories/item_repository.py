@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import UTC, date, datetime, timedelta
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,13 +40,15 @@ class ItemRepository:
         today = date.today()
         threshold = today + timedelta(days=days)
         result = await self.db.execute(
-            select(PantryItem).where(
+            select(PantryItem)
+            .where(
                 and_(
                     PantryItem.household_id == household_id,
                     PantryItem.expiry_date <= threshold,
                     PantryItem.deleted_at.is_(None),
                 )
-            ).order_by(PantryItem.expiry_date.asc())
+            )
+            .order_by(PantryItem.expiry_date.asc())
         )
         return list(result.scalars().all())
 
@@ -55,12 +57,14 @@ class ItemRepository:
         today = date.today()
         threshold = today + timedelta(days=threshold_days)
         result = await self.db.execute(
-            select(PantryItem).where(
+            select(PantryItem)
+            .where(
                 and_(
                     PantryItem.expiry_date <= threshold,
                     PantryItem.deleted_at.is_(None),
                 )
-            ).order_by(PantryItem.expiry_date.asc())
+            )
+            .order_by(PantryItem.expiry_date.asc())
         )
         return list(result.scalars().all())
 
@@ -106,13 +110,13 @@ class ItemRepository:
         item = await self.get_by_id(item_id)
         if not item:
             return False
-        item.deleted_at = datetime.now(timezone.utc)
+        item.deleted_at = datetime.now(UTC)
         await self.db.commit()
         return True
 
     async def cleanup_old_deleted(self, days: int = 7) -> int:
         """Permanently delete items soft-deleted more than `days` ago. Returns count."""
-        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        cutoff = datetime.now(UTC) - timedelta(days=days)
         result = await self.db.execute(
             select(PantryItem).where(
                 and_(
@@ -128,9 +132,7 @@ class ItemRepository:
         await self.db.commit()
         return count
 
-    async def find_duplicate(
-        self, household_id: uuid.UUID, name: str
-    ) -> PantryItem | None:
+    async def find_duplicate(self, household_id: uuid.UUID, name: str) -> PantryItem | None:
         """Find existing active item by household and name (case-insensitive)."""
         result = await self.db.execute(
             select(PantryItem).where(

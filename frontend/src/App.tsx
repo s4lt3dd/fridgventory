@@ -1,17 +1,17 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
-import Layout from '@/components/layout/Layout';
-import LandingPage from '@/pages/LandingPage';
-import LoginPage from '@/pages/auth/LoginPage';
-import RegisterPage from '@/pages/auth/RegisterPage';
-import DashboardPage from '@/pages/DashboardPage';
-import AddItemPage from '@/pages/AddItemPage';
-import HouseholdPage from '@/pages/HouseholdPage';
-import RecipesPage from '@/pages/RecipesPage';
-import SettingsPage from '@/pages/SettingsPage';
-import JoinPage from '@/pages/JoinPage';
-import LoadingSpinner from '@/components/ui/LoadingSpinner';
-import ErrorBoundary from '@/components/ui/ErrorBoundary';
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import Layout from "@/components/layout/Layout";
+import LandingPage from "@/pages/LandingPage";
+import LoginPage from "@/pages/auth/LoginPage";
+import RegisterPage from "@/pages/auth/RegisterPage";
+import DashboardPage from "@/pages/DashboardPage";
+import AddItemPage from "@/pages/AddItemPage";
+import HouseholdPage from "@/pages/HouseholdPage";
+import RecipesPage from "@/pages/RecipesPage";
+import SettingsPage from "@/pages/SettingsPage";
+import JoinPage from "@/pages/JoinPage";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import ErrorBoundary from "@/components/ui/ErrorBoundary";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -57,7 +57,10 @@ export default function App() {
                   <Route path="households" element={<HouseholdPage />} />
                   <Route path="recipes" element={<RecipesPage />} />
                   <Route path="settings" element={<SettingsPage />} />
-                  <Route path="*" element={<Navigate to="/app/dashboard" replace />} />
+                  <Route
+                    path="*"
+                    element={<Navigate to="/app/dashboard" replace />}
+                  />
                 </Routes>
               </Layout>
             </ProtectedRoute>

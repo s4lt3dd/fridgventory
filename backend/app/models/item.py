@@ -26,9 +26,7 @@ ITEM_CATEGORIES = (
 class PantryItem(Base):
     __tablename__ = "pantry_items"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     household_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("households.id", ondelete="CASCADE"),

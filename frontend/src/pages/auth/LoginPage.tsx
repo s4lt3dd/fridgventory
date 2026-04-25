@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
-import { Refrigerator } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import Button from '@/components/ui/Button';
-import Input from '@/components/ui/Input';
-import { isValidEmail } from '@/utils/validation';
+import { useState } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { Refrigerator } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import Button from "@/components/ui/Button";
+import Input from "@/components/ui/Input";
+import { isValidEmail } from "@/utils/validation";
 
 export default function LoginPage() {
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   if (authLoading) return null;
@@ -20,26 +20,26 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     let hasError = false;
     if (!isValidEmail(email)) {
-      setEmailError('Please enter a valid email address.');
+      setEmailError("Please enter a valid email address.");
       hasError = true;
     } else {
-      setEmailError('');
+      setEmailError("");
     }
     if (!password) {
-      setPasswordError('Please enter your password.');
+      setPasswordError("Please enter your password.");
       hasError = true;
     } else {
-      setPasswordError('');
+      setPasswordError("");
     }
     if (hasError) return;
     setLoading(true);
     try {
       await login(email, password);
     } catch {
-      setError('Invalid email or password');
+      setError("Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -51,9 +51,13 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <div className="mb-3 inline-flex items-center gap-2">
             <Refrigerator className="h-9 w-9 text-primary" />
-            <h1 className="font-display text-6xl leading-none text-primary">FridgeCheck</h1>
+            <h1 className="font-display text-6xl leading-none text-primary">
+              FridgeCheck
+            </h1>
           </div>
-          <p className="text-text-muted">Welcome back — let's keep food out of the bin.</p>
+          <p className="text-text-muted">
+            Welcome back — let's keep food out of the bin.
+          </p>
         </div>
 
         <form
@@ -72,7 +76,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
-              if (emailError) setEmailError('');
+              if (emailError) setEmailError("");
             }}
             placeholder="you@example.com"
             autoComplete="email"
@@ -86,7 +90,7 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
-              if (passwordError) setPasswordError('');
+              if (passwordError) setPasswordError("");
             }}
             placeholder="Your password"
             autoComplete="current-password"
@@ -100,8 +104,11 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-5 text-center text-sm text-text-muted">
-          New here?{' '}
-          <Link to="/register" className="font-semibold text-primary hover:underline">
+          New here?{" "}
+          <Link
+            to="/register"
+            className="font-semibold text-primary hover:underline"
+          >
             Create an account
           </Link>
         </p>

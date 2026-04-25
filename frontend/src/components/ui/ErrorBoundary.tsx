@@ -1,5 +1,5 @@
-import React from 'react';
-import { AlertTriangle } from 'lucide-react';
+import React from "react";
+import { AlertTriangle } from "lucide-react";
 
 interface Props {
   children: React.ReactNode;
@@ -28,9 +28,11 @@ export default class ErrorBoundary extends React.Component<Props, State> {
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
               <AlertTriangle className="h-7 w-7 text-primary" />
             </div>
-            <h1 className="mb-2 font-display text-4xl text-text-primary">Something went wrong</h1>
+            <h1 className="mb-2 font-display text-4xl text-text-primary">
+              Something went wrong
+            </h1>
             <p className="mb-6 text-text-muted">
-              {this.state.error?.message || 'An unexpected error occurred'}
+              {this.state.error?.message || "An unexpected error occurred"}
             </p>
             <button
               onClick={() => window.location.reload()}

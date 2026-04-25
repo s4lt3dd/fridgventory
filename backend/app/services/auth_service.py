@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import structlog
 from jose import JWTError, jwt
@@ -43,13 +43,11 @@ class AuthService:
 
     @staticmethod
     def create_access_token(user_id: uuid.UUID) -> str:
-        expire = datetime.now(timezone.utc) + timedelta(
-            minutes=settings.access_token_expire_minutes
-        )
+        expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
         payload = {
             "sub": str(user_id),
             "exp": expire,
-            "iat": datetime.now(timezone.utc),
+            "iat": datetime.now(UTC),
             "type": "access",
         }
         return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
@@ -93,9 +91,7 @@ class AuthService:
         access_token = self.create_access_token(user.id)
         refresh_token = self.create_refresh_token()
 
-        expires_at = datetime.now(timezone.utc) + timedelta(
-            days=settings.refresh_token_expire_days
-        )
+        expires_at = datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
         await self.user_repo.store_refresh_token(user.id, refresh_token, expires_at)
 
         logger.info("User registered", user_id=str(user.id), email=email)
@@ -116,9 +112,7 @@ class AuthService:
         access_token = self.create_access_token(user.id)
         refresh_token = self.create_refresh_token()
 
-        expires_at = datetime.now(timezone.utc) + timedelta(
-            days=settings.refresh_token_expire_days
-        )
+        expires_at = datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
         await self.user_repo.store_refresh_token(user.id, refresh_token, expires_at)
 
         logger.info("User logged in", user_id=str(user.id))
@@ -133,7 +127,7 @@ class AuthService:
         if token_record.revoked_at is not None:
             raise AuthError("Refresh token has been revoked")
 
-        if token_record.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+        if token_record.expires_at.replace(tzinfo=UTC) < datetime.now(UTC):
             raise AuthError("Refresh token has expired")
 
         # Rotate: revoke old, issue new pair
@@ -142,9 +136,7 @@ class AuthService:
         new_access_token = self.create_access_token(token_record.user_id)
         new_refresh_token = self.create_refresh_token()
 
-        expires_at = datetime.now(timezone.utc) + timedelta(
-            days=settings.refresh_token_expire_days
-        )
+        expires_at = datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
         await self.user_repo.store_refresh_token(
             token_record.user_id, new_refresh_token, expires_at
         )

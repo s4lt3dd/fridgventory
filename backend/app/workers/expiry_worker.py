@@ -10,7 +10,6 @@ from datetime import date
 
 import structlog
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy.ext.asyncio import AsyncSession
 
 # Ensure the app package is importable when running as module
 sys.path.insert(0, ".")

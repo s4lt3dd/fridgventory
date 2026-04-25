@@ -12,10 +12,9 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 # Ensure app package is importable
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from app.database import Base
-
 # Import all models so they are registered on Base.metadata
 import app.models  # noqa: F401
+from app.database import Base
 
 config = context.config
 

@@ -1,15 +1,12 @@
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-} from '@tanstack/react-query';
-import { itemsApi } from '@/api/items';
-import { PantryItem, ItemCreate, GroupedItems } from '@/types';
-import { groupItemsByUrgency } from '@/utils/urgency';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { itemsApi } from "@/api/items";
+import { PantryItem, ItemCreate, GroupedItems } from "@/types";
+import { groupItemsByUrgency } from "@/utils/urgency";
 
 const itemKeys = {
-  all: (householdId: string) => ['items', householdId] as const,
-  expiring: (householdId: string) => ['items', householdId, 'expiring'] as const,
+  all: (householdId: string) => ["items", householdId] as const,
+  expiring: (householdId: string) =>
+    ["items", householdId, "expiring"] as const,
 };
 
 export function useItems(householdId: string) {
@@ -40,7 +37,9 @@ export function useAddItem(householdId: string) {
   return useMutation({
     mutationFn: (item: ItemCreate) => itemsApi.create(householdId, item),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: itemKeys.all(householdId) });
+      void queryClient.invalidateQueries({
+        queryKey: itemKeys.all(householdId),
+      });
       void queryClient.invalidateQueries({
         queryKey: itemKeys.expiring(householdId),
       });
@@ -60,7 +59,9 @@ export function useUpdateItem(householdId: string) {
     mutationFn: ({ itemId, data }: UpdateItemVariables) =>
       itemsApi.update(householdId, itemId, data),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: itemKeys.all(householdId) });
+      void queryClient.invalidateQueries({
+        queryKey: itemKeys.all(householdId),
+      });
     },
   });
 }
@@ -74,10 +75,10 @@ export function useDeleteItem(householdId: string) {
       // Optimistic update
       await queryClient.cancelQueries({ queryKey: itemKeys.all(householdId) });
       const previous = queryClient.getQueryData<PantryItem[]>(
-        itemKeys.all(householdId)
+        itemKeys.all(householdId),
       );
       queryClient.setQueryData<PantryItem[]>(itemKeys.all(householdId), (old) =>
-        (old ?? []).filter((item) => item.id !== itemId)
+        (old ?? []).filter((item) => item.id !== itemId),
       );
       return { previous };
     },
@@ -87,7 +88,9 @@ export function useDeleteItem(householdId: string) {
       }
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: itemKeys.all(householdId) });
+      void queryClient.invalidateQueries({
+        queryKey: itemKeys.all(householdId),
+      });
     },
   });
 }

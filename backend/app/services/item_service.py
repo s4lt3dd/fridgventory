@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, timedelta
+from datetime import date
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -90,9 +90,7 @@ class ItemService:
         logger.info("Item added", item_id=str(item.id), household_id=str(household_id))
         return _to_response(item)
 
-    async def get_item(
-        self, item_id: uuid.UUID, household_id: uuid.UUID
-    ) -> ItemResponse | None:
+    async def get_item(self, item_id: uuid.UUID, household_id: uuid.UUID) -> ItemResponse | None:
         item = await self.item_repo.get_by_id(item_id)
         if not item or item.household_id != household_id:
             return None

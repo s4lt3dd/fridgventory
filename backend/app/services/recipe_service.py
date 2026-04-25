@@ -1,5 +1,5 @@
-import structlog
 import httpx
+import structlog
 
 from app.config import settings
 from app.schemas.item import ItemResponse
@@ -40,9 +40,7 @@ class RecipeService:
     def __init__(self) -> None:
         self.api_url = settings.recipe_api_url
 
-    async def get_suggestions(
-        self, expiring_items: list[ItemResponse]
-    ) -> list[RecipeSuggestion]:
+    async def get_suggestions(self, expiring_items: list[ItemResponse]) -> list[RecipeSuggestion]:
         if not expiring_items:
             return self._get_fallback_suggestions([])
 
@@ -76,9 +74,7 @@ class RecipeService:
         all_suggestions.sort(key=lambda s: len(s.matched_ingredients), reverse=True)
         return all_suggestions[:10]
 
-    async def _fetch_from_api(
-        self, client: httpx.AsyncClient, ingredient: str
-    ) -> list[dict]:
+    async def _fetch_from_api(self, client: httpx.AsyncClient, ingredient: str) -> list[dict]:
         url = f"{self.api_url}/filter.php"
         response = await client.get(url, params={"i": ingredient})
         response.raise_for_status()
@@ -86,9 +82,7 @@ class RecipeService:
         meals = data.get("meals") or []
         return meals  # type: ignore[return-value]
 
-    def _map_meal_to_suggestion(
-        self, meal: dict, matched_ingredient: str
-    ) -> RecipeSuggestion:
+    def _map_meal_to_suggestion(self, meal: dict, matched_ingredient: str) -> RecipeSuggestion:
         return RecipeSuggestion(
             id=meal.get("idMeal", ""),
             name=meal.get("strMeal", "Unknown"),
@@ -99,9 +93,7 @@ class RecipeService:
             area=meal.get("strArea"),
         )
 
-    def _get_fallback_suggestions(
-        self, items: list[ItemResponse]
-    ) -> list[RecipeSuggestion]:
+    def _get_fallback_suggestions(self, items: list[ItemResponse]) -> list[RecipeSuggestion]:
         # Enrich fallback suggestions with matched ingredient names if possible
         ingredient_names = [item.name for item in items]
         suggestions = list(_FALLBACK_RECIPES)
