@@ -40,13 +40,15 @@ class ItemRepository:
         today = date.today()
         threshold = today + timedelta(days=days)
         result = await self.db.execute(
-            select(PantryItem).where(
+            select(PantryItem)
+            .where(
                 and_(
                     PantryItem.household_id == household_id,
                     PantryItem.expiry_date <= threshold,
                     PantryItem.deleted_at.is_(None),
                 )
-            ).order_by(PantryItem.expiry_date.asc())
+            )
+            .order_by(PantryItem.expiry_date.asc())
         )
         return list(result.scalars().all())
 
@@ -55,12 +57,14 @@ class ItemRepository:
         today = date.today()
         threshold = today + timedelta(days=threshold_days)
         result = await self.db.execute(
-            select(PantryItem).where(
+            select(PantryItem)
+            .where(
                 and_(
                     PantryItem.expiry_date <= threshold,
                     PantryItem.deleted_at.is_(None),
                 )
-            ).order_by(PantryItem.expiry_date.asc())
+            )
+            .order_by(PantryItem.expiry_date.asc())
         )
         return list(result.scalars().all())
 
@@ -128,9 +132,7 @@ class ItemRepository:
         await self.db.commit()
         return count
 
-    async def find_duplicate(
-        self, household_id: uuid.UUID, name: str
-    ) -> PantryItem | None:
+    async def find_duplicate(self, household_id: uuid.UUID, name: str) -> PantryItem | None:
         """Find existing active item by household and name (case-insensitive)."""
         result = await self.db.execute(
             select(PantryItem).where(

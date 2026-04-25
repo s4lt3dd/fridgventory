@@ -8,9 +8,8 @@ from app.config import settings
 
 def get_async_url(url: str) -> str:
     """Convert sync PostgreSQL URL to async asyncpg URL."""
-    return (
-        url.replace("postgresql://", "postgresql+asyncpg://")
-        .replace("postgres://", "postgresql+asyncpg://")
+    return url.replace("postgresql://", "postgresql+asyncpg://").replace(
+        "postgres://", "postgresql+asyncpg://"
     )
 
 

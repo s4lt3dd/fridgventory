@@ -48,9 +48,7 @@ class HouseholdService:
         self.db = db
         self.household_repo = HouseholdRepository(db)
 
-    async def create_household(
-        self, user_id: uuid.UUID, name: str
-    ) -> HouseholdResponse:
+    async def create_household(self, user_id: uuid.UUID, name: str) -> HouseholdResponse:
         household = await self.household_repo.create(name=name, owner_id=user_id)
         logger.info(
             "Household created",
@@ -59,9 +57,7 @@ class HouseholdService:
         )
         return _household_to_response(household)
 
-    async def get_household(
-        self, household_id: uuid.UUID, user_id: uuid.UUID
-    ) -> HouseholdResponse:
+    async def get_household(self, household_id: uuid.UUID, user_id: uuid.UUID) -> HouseholdResponse:
         household = await self.household_repo.get_by_id(household_id)
         if not household:
             raise HouseholdError("Household not found")
@@ -76,9 +72,7 @@ class HouseholdService:
         households = await self.household_repo.get_user_households(user_id)
         return [_household_to_response(h) for h in households]
 
-    async def join_household(
-        self, user_id: uuid.UUID, invite_token: str
-    ) -> HouseholdResponse:
+    async def join_household(self, user_id: uuid.UUID, invite_token: str) -> HouseholdResponse:
         household = await self.household_repo.get_by_invite_token(invite_token)
         if not household:
             raise HouseholdError("Invalid invite token")
@@ -120,9 +114,7 @@ class HouseholdService:
 
         return f"{base_url.rstrip('/')}/join?token={household.invite_token}"
 
-    async def regenerate_invite(
-        self, household_id: uuid.UUID, user_id: uuid.UUID
-    ) -> str:
+    async def regenerate_invite(self, household_id: uuid.UUID, user_id: uuid.UUID) -> str:
         member = await self.household_repo.get_member(household_id, user_id)
         if not member:
             raise HouseholdError("You are not a member of this household")

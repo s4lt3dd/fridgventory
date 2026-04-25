@@ -7,9 +7,7 @@ from app.models.household import Household
 
 
 @pytest.mark.asyncio
-async def test_create_household(
-    client: AsyncClient, auth_headers: dict[str, str]
-) -> None:
+async def test_create_household(client: AsyncClient, auth_headers: dict[str, str]) -> None:
     response = await client.post(
         "/api/v1/households",
         headers=auth_headers,

@@ -20,9 +20,7 @@ class HouseholdRepository:
         result = await self.db.execute(
             select(Household)
             .where(Household.id == household_id)
-            .options(
-                selectinload(Household.members).selectinload(HouseholdMember.user)
-            )
+            .options(selectinload(Household.members).selectinload(HouseholdMember.user))
         )
         return result.scalar_one_or_none()
 
@@ -30,9 +28,7 @@ class HouseholdRepository:
         result = await self.db.execute(
             select(Household)
             .where(Household.invite_token == token)
-            .options(
-                selectinload(Household.members).selectinload(HouseholdMember.user)
-            )
+            .options(selectinload(Household.members).selectinload(HouseholdMember.user))
         )
         return result.scalar_one_or_none()
 
@@ -41,9 +37,7 @@ class HouseholdRepository:
             select(Household)
             .join(HouseholdMember, Household.id == HouseholdMember.household_id)
             .where(HouseholdMember.user_id == user_id)
-            .options(
-                selectinload(Household.members).selectinload(HouseholdMember.user)
-            )
+            .options(selectinload(Household.members).selectinload(HouseholdMember.user))
             .order_by(Household.created_at.desc())
         )
         return list(result.scalars().all())

@@ -11,7 +11,9 @@ from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # Set test env vars before importing app
-os.environ.setdefault("DATABASE_URL", "postgresql://fridgecheck:fridgecheck_test@localhost:5432/fridgecheck_test")
+os.environ.setdefault(
+    "DATABASE_URL", "postgresql://fridgecheck:fridgecheck_test@localhost:5432/fridgecheck_test"
+)
 os.environ.setdefault("REDIS_URL", "redis://localhost:6379/1")
 os.environ.setdefault("SECRET_KEY", "test_secret_key_for_testing_only")
 os.environ.setdefault("ENVIRONMENT", "testing")
@@ -21,9 +23,11 @@ from app.main import app
 from app.models import Household, HouseholdMember, PantryItem, User
 from app.services.auth_service import AuthService
 
-TEST_DATABASE_URL = os.environ["DATABASE_URL"].replace(
-    "postgresql://", "postgresql+asyncpg://"
-).replace("postgres://", "postgresql+asyncpg://")
+TEST_DATABASE_URL = (
+    os.environ["DATABASE_URL"]
+    .replace("postgresql://", "postgresql+asyncpg://")
+    .replace("postgres://", "postgresql+asyncpg://")
+)
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestSessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
@@ -93,9 +97,7 @@ async def test_household(db_session: AsyncSession, test_user: User) -> Household
     db_session.add(household)
     await db_session.flush()
 
-    member = HouseholdMember(
-        household_id=household.id, user_id=test_user.id, role="owner"
-    )
+    member = HouseholdMember(household_id=household.id, user_id=test_user.id, role="owner")
     db_session.add(member)
     await db_session.commit()
     await db_session.refresh(household)

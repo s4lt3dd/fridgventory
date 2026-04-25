@@ -43,9 +43,7 @@ class AuthService:
 
     @staticmethod
     def create_access_token(user_id: uuid.UUID) -> str:
-        expire = datetime.now(UTC) + timedelta(
-            minutes=settings.access_token_expire_minutes
-        )
+        expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
         payload = {
             "sub": str(user_id),
             "exp": expire,
@@ -93,9 +91,7 @@ class AuthService:
         access_token = self.create_access_token(user.id)
         refresh_token = self.create_refresh_token()
 
-        expires_at = datetime.now(UTC) + timedelta(
-            days=settings.refresh_token_expire_days
-        )
+        expires_at = datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
         await self.user_repo.store_refresh_token(user.id, refresh_token, expires_at)
 
         logger.info("User registered", user_id=str(user.id), email=email)
@@ -116,9 +112,7 @@ class AuthService:
         access_token = self.create_access_token(user.id)
         refresh_token = self.create_refresh_token()
 
-        expires_at = datetime.now(UTC) + timedelta(
-            days=settings.refresh_token_expire_days
-        )
+        expires_at = datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
         await self.user_repo.store_refresh_token(user.id, refresh_token, expires_at)
 
         logger.info("User logged in", user_id=str(user.id))
@@ -142,9 +136,7 @@ class AuthService:
         new_access_token = self.create_access_token(token_record.user_id)
         new_refresh_token = self.create_refresh_token()
 
-        expires_at = datetime.now(UTC) + timedelta(
-            days=settings.refresh_token_expire_days
-        )
+        expires_at = datetime.now(UTC) + timedelta(days=settings.refresh_token_expire_days)
         await self.user_repo.store_refresh_token(
             token_record.user_id, new_refresh_token, expires_at
         )
