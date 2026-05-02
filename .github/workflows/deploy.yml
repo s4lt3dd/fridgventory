@@ -101,11 +101,15 @@ jobs:
 
       - name: Terraform Plan
         working-directory: ${{ env.TF_DIR }}
+        # `sns_alert_email` defaults to "" if the repo var is unset, which
+        # disables the email subscription via count. If you want CloudWatch
+        # alarm emails in dev, set the `SNS_ALERT_EMAIL_DEV` repo variable.
         run: |
           terraform plan -input=false \
             -var="api_image=${{ steps.images.outputs.api_image }}" \
             -var="worker_image=${{ steps.images.outputs.worker_image }}" \
             -var="secret_key_ssm_arn=${{ secrets.SECRET_KEY_SSM_ARN_DEV }}" \
+            -var="sns_alert_email=${{ vars.SNS_ALERT_EMAIL_DEV }}" \
             -out=tfplan
 
       - name: Terraform Apply
