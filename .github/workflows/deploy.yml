@@ -1,112 +1,313 @@
 name: Deploy
 
+# Push-to-dev = deploy-to-dev. Prod is gated on releases (release.yml builds
+# versioned ECR images with `environment: prod`); a separate prod deploy job
+# will be added once the prod GitHub Environment + AWS resources exist.
+
 on:
-  release:
-    types: [published]
+  push:
+    branches: [dev]
+  workflow_dispatch:
 
 permissions:
-  id-token: write
+  id-token: write   # OIDC -> AWS
   contents: read
+
+# Queue deploys to dev so two pushes in quick succession don't race terraform
+# state or partially-overwrite ECS services. We do not cancel in-progress runs
+# because that would leave migrations or service updates half-applied.
+concurrency:
+  group: deploy-dev
+  cancel-in-progress: false
 
 jobs:
   deploy-dev:
     name: Deploy to Dev
     runs-on: ubuntu-latest
-    environment: dev
+    environment: dev    # required: the iam-cicd dev role's trust policy gates
+                        # AssumeRoleWithWebIdentity on `environment:dev` in the
+                        # OIDC token's `sub` claim.
+    timeout-minutes: 60
+
+    env:
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      TF_DIR: terraform/environments/dev
+      IMAGE_TAG: ${{ github.sha }}
+
     steps:
       - uses: actions/checkout@v4
 
+      # ---------------------------------------------------------------------
+      # Phase 1: Auth + image build/push
+      # ---------------------------------------------------------------------
+
       - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
-          aws-region: eu-west-1
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN_DEV }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/api/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/fridgecheck-api:${{ env.IMAGE_TAG }}
+            ${{ steps.ecr-login.outputs.registry }}/fridgecheck-api:dev-latest
+          cache-from: type=gha,scope=api
+          cache-to: type=gha,scope=api,mode=max
+
+      - name: Build and push Worker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/worker/Dockerfile
+          push: true
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/fridgecheck-worker:${{ env.IMAGE_TAG }}
+            ${{ steps.ecr-login.outputs.registry }}/fridgecheck-worker:dev-latest
+          cache-from: type=gha,scope=worker
+          cache-to: type=gha,scope=worker,mode=max
+
+      - name: Compose image URIs
+        id: images
+        run: |
+          REGISTRY="${{ steps.ecr-login.outputs.registry }}"
+          echo "api_image=${REGISTRY}/fridgecheck-api:${IMAGE_TAG}"       >> "$GITHUB_OUTPUT"
+          echo "worker_image=${REGISTRY}/fridgecheck-worker:${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+
+      # ---------------------------------------------------------------------
+      # Phase 2: Terraform — apply infra with the new image tags
+      # ---------------------------------------------------------------------
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.7.0"
+          terraform_wrapper: false   # we want raw stdout from `terraform output`
 
       - name: Terraform Init
-        run: cd terraform/environments/dev && terraform init
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform init -input=false
 
       - name: Terraform Plan
+        working-directory: ${{ env.TF_DIR }}
         run: |
-          cd terraform/environments/dev
-          terraform plan \
-            -var="api_image=ghcr.io/${{ github.repository }}/api:${{ github.event.release.tag_name }}" \
-            -var="worker_image=ghcr.io/${{ github.repository }}/worker:${{ github.event.release.tag_name }}" \
-            -var="secret_key_ssm_arn=${{ secrets.SECRET_KEY_SSM_ARN }}" \
+          terraform plan -input=false \
+            -var="api_image=${{ steps.images.outputs.api_image }}" \
+            -var="worker_image=${{ steps.images.outputs.worker_image }}" \
+            -var="secret_key_ssm_arn=${{ secrets.SECRET_KEY_SSM_ARN_DEV }}" \
             -out=tfplan
 
       - name: Terraform Apply
-        run: cd terraform/environments/dev && terraform apply tfplan
+        working-directory: ${{ env.TF_DIR }}
+        run: terraform apply -input=false -auto-approve tfplan
 
-      - name: Smoke Tests
+      - name: Capture Terraform outputs
+        id: tf
+        working-directory: ${{ env.TF_DIR }}
         run: |
-          API_URL=$(cd terraform/environments/dev && terraform output -raw api_url)
-          for i in 1 2 3 4 5; do
-            if curl -sf "${API_URL}/health"; then
-              echo "Smoke test passed"
-              exit 0
-            fi
-            echo "Attempt $i failed, retrying in 10s..."
-            sleep 10
-          done
-          echo "Smoke tests failed"
-          exit 1
+          {
+            echo "ecs_cluster=$(terraform output -raw ecs_cluster)"
+            echo "private_subnet_ids=$(terraform output -json private_subnet_ids | jq -r 'join(",")')"
+            echo "api_security_group_id=$(terraform output -raw api_security_group_id)"
+            echo "frontend_bucket_name=$(terraform output -raw frontend_bucket_name)"
+            echo "cloudfront_distribution_id=$(terraform output -raw cloudfront_distribution_id)"
+            echo "frontend_url=$(terraform output -raw frontend_url)"
+          } >> "$GITHUB_OUTPUT"
 
-  deploy-prod:
-    name: Deploy to Prod
-    runs-on: ubuntu-latest
-    environment: prod
-    needs: deploy-dev
-    steps:
-      - uses: actions/checkout@v4
+      # ---------------------------------------------------------------------
+      # Phase 3: Run alembic migrations (one-shot ECS task)
+      # ---------------------------------------------------------------------
+      # We override the api task definition's command. The api family already
+      # has DATABASE_URL in its environment + the right SG/subnets for RDS,
+      # so we just swap the entrypoint command. Using the family name (no
+      # revision) makes ECS pick the latest revision automatically.
 
-      - name: Configure AWS credentials (OIDC)
-        uses: aws-actions/configure-aws-credentials@v4
+      - name: Run database migrations
+        env:
+          CLUSTER: ${{ steps.tf.outputs.ecs_cluster }}
+          SUBNETS: ${{ steps.tf.outputs.private_subnet_ids }}
+          SG: ${{ steps.tf.outputs.api_security_group_id }}
+        run: |
+          set -euo pipefail
+
+          OVERRIDES=$(jq -nc '{
+            containerOverrides: [
+              { name: "api", command: ["alembic", "upgrade", "head"] }
+            ]
+          }')
+
+          NETWORK=$(jq -nc --arg subnets "$SUBNETS" --arg sg "$SG" '{
+            awsvpcConfiguration: {
+              subnets: ($subnets | split(",")),
+              securityGroups: [$sg],
+              assignPublicIp: "DISABLED"
+            }
+          }')
+
+          TASK_ARN=$(aws ecs run-task \
+            --cluster "$CLUSTER" \
+            --launch-type FARGATE \
+            --task-definition "fridgecheck-dev-api" \
+            --network-configuration "$NETWORK" \
+            --overrides "$OVERRIDES" \
+            --started-by "gha-${IMAGE_TAG:0:7}" \
+            --query 'tasks[0].taskArn' --output text)
+
+          echo "Migration task: $TASK_ARN"
+
+          # 100 attempts × 6s = 10 min ceiling.
+          aws ecs wait tasks-stopped --cluster "$CLUSTER" --tasks "$TASK_ARN"
+
+          EXIT_CODE=$(aws ecs describe-tasks \
+            --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+            --query 'tasks[0].containers[0].exitCode' --output text)
+          STOPPED_REASON=$(aws ecs describe-tasks \
+            --cluster "$CLUSTER" --tasks "$TASK_ARN" \
+            --query 'tasks[0].stoppedReason' --output text)
+
+          echo "Migration exit code: $EXIT_CODE"
+          echo "Stopped reason: $STOPPED_REASON"
+
+          if [ "$EXIT_CODE" != "0" ]; then
+            echo "::error::Database migration failed (exit $EXIT_CODE). Logs in /aws/ecs/fridgecheck-dev/api."
+            exit 1
+          fi
+
+      # ---------------------------------------------------------------------
+      # Phase 4: Roll ECS services to the new image
+      # ---------------------------------------------------------------------
+      # Terraform updated the task definition; --force-new-deployment makes
+      # the service pick up the latest revision and drain old tasks.
+
+      - name: Force new deployment of api + worker services
+        env:
+          CLUSTER: ${{ steps.tf.outputs.ecs_cluster }}
+        run: |
+          set -euo pipefail
+          aws ecs update-service --cluster "$CLUSTER" --service "fridgecheck-dev-api"    --force-new-deployment > /dev/null
+          aws ecs update-service --cluster "$CLUSTER" --service "fridgecheck-dev-worker" --force-new-deployment > /dev/null
+
+      - name: Wait for services to stabilise
+        env:
+          CLUSTER: ${{ steps.tf.outputs.ecs_cluster }}
+        run: |
+          # Default wait = 40 min (15s × 40 attempts × backoff). Run in
+          # parallel so worker doesn't add to api's wall time.
+          aws ecs wait services-stable \
+            --cluster "$CLUSTER" \
+            --services fridgecheck-dev-api fridgecheck-dev-worker
+
+      # ---------------------------------------------------------------------
+      # Phase 5: Build + deploy frontend (S3 + CloudFront invalidation)
+      # ---------------------------------------------------------------------
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN_PROD }}
-          aws-region: eu-west-1
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: "1.7.0"
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
 
-      - name: Terraform Init
-        run: cd terraform/environments/prod && terraform init
+      - name: Build frontend
+        working-directory: frontend
+        env:
+          # CloudFront routes /api/* to the ALB; the SPA hits relative URLs.
+          VITE_API_URL: /api/v1
+        run: npm run build
 
-      - name: Terraform Plan
+      - name: Sync frontend to S3
+        env:
+          BUCKET: ${{ steps.tf.outputs.frontend_bucket_name }}
         run: |
-          cd terraform/environments/prod
-          terraform plan \
-            -var="api_image=ghcr.io/${{ github.repository }}/api:${{ github.event.release.tag_name }}" \
-            -var="worker_image=ghcr.io/${{ github.repository }}/worker:${{ github.event.release.tag_name }}" \
-            -var="secret_key_ssm_arn=${{ secrets.SECRET_KEY_SSM_ARN_PROD }}" \
-            -out=tfplan
+          set -euo pipefail
+          # Pass 1: hashed assets — long-lived immutable cache.
+          aws s3 sync frontend/dist "s3://$BUCKET/" \
+            --delete \
+            --exclude "*.html" \
+            --exclude "*.json" \
+            --exclude "*.txt" \
+            --cache-control "public, max-age=31536000, immutable"
 
-      - name: Terraform Apply
-        run: cd terraform/environments/prod && terraform apply tfplan
+          # Pass 2: index.html + service-worker-style files — never cache.
+          # These point at the hashed assets above, so they MUST be re-fetched
+          # on every visit or users get a stale shell pointing at a deleted JS bundle.
+          aws s3 sync frontend/dist "s3://$BUCKET/" \
+            --exclude "*" \
+            --include "*.html" \
+            --include "*.json" \
+            --include "*.txt" \
+            --cache-control "no-cache, no-store, must-revalidate"
 
-      - name: Smoke Tests
-        id: smoke
+      - name: Invalidate CloudFront cache
+        env:
+          DIST_ID: ${{ steps.tf.outputs.cloudfront_distribution_id }}
         run: |
-          API_URL=$(cd terraform/environments/prod && terraform output -raw api_url)
-          for i in 1 2 3 4 5; do
-            if curl -sf "${API_URL}/health"; then
-              echo "Smoke test passed"
-              exit 0
-            fi
-            echo "Attempt $i failed, retrying in 10s..."
-            sleep 10
-          done
-          echo "Smoke tests failed"
-          exit 1
+          set -euo pipefail
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id "$DIST_ID" \
+            --paths "/*" \
+            --query 'Invalidation.Id' --output text)
+          echo "Invalidation: $INVALIDATION_ID"
+          aws cloudfront wait invalidation-completed \
+            --distribution-id "$DIST_ID" \
+            --id "$INVALIDATION_ID"
 
-      - name: Rollback notice on failure
-        if: failure() && steps.smoke.outcome == 'failure'
+      # ---------------------------------------------------------------------
+      # Phase 6: Smoke test through CloudFront (the real user path)
+      # ---------------------------------------------------------------------
+      # /health is mounted at the API root and is NOT exposed via CloudFront
+      # (CF only routes /api/* to the ALB). We hit /api/openapi.json which
+      # FastAPI serves under the /api prefix in this app.
+
+      - name: Smoke test
+        env:
+          FRONTEND_URL: ${{ steps.tf.outputs.frontend_url }}
         run: |
-          echo "::error::Production smoke tests failed. Manual rollback may be required."
-          echo "Consider re-deploying the previous version."
+          set -euo pipefail
+
+          probe() {
+            local url="$1"
+            local label="$2"
+            for i in 1 2 3 4 5 6; do
+              code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" || echo "000")
+              if [ "$code" = "200" ]; then
+                echo "[$label] OK ($url)"
+                return 0
+              fi
+              echo "[$label] attempt $i got HTTP $code, retrying in 15s..."
+              sleep 15
+            done
+            echo "::error::[$label] never returned 200 ($url)"
+            return 1
+          }
+
+          probe "$FRONTEND_URL/"                  "frontend"
+          probe "$FRONTEND_URL/api/openapi.json"  "api"
+
+      - name: Deployment summary
+        if: always()
+        env:
+          FRONTEND_URL: ${{ steps.tf.outputs.frontend_url }}
+        run: |
+          {
+            echo "## Dev deployment — \`${IMAGE_TAG:0:7}\`"
+            echo ""
+            echo "- Frontend: $FRONTEND_URL"
+            echo "- API image: \`${{ steps.images.outputs.api_image }}\`"
+            echo "- Worker image: \`${{ steps.images.outputs.worker_image }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
