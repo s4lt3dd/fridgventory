@@ -1,9 +1,14 @@
 output "redis_endpoint" {
-  description = "Endpoint address of the Redis cluster"
-  value       = aws_elasticache_cluster.main.cache_nodes[0].address
+  description = "Primary endpoint address of the Redis replication group"
+  value       = aws_elasticache_replication_group.main.primary_endpoint_address
 }
 
 output "redis_port" {
-  description = "Port of the Redis cluster"
-  value       = aws_elasticache_cluster.main.cache_nodes[0].port
+  description = "Port of the Redis replication group"
+  value       = aws_elasticache_replication_group.main.port
+}
+
+output "redis_url_scheme" {
+  description = "URL scheme — rediss:// because transit encryption is enabled"
+  value       = "rediss"
 }

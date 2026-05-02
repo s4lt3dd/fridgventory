@@ -67,7 +67,6 @@ resource "aws_cloudwatch_metric_alarm" "api_memory_high" {
 }
 
 resource "aws_cloudwatch_metric_alarm" "alb_5xx" {
-  count               = var.alb_arn_suffix != "" ? 1 : 0
   alarm_name          = "${var.project}-${var.environment}-alb-5xx-high"
   comparison_operator = "GreaterThanThreshold"
   evaluation_periods  = 2
@@ -122,10 +121,10 @@ resource "aws_cloudwatch_dashboard" "main" {
         height = 6
         properties = {
           title = "API Request Count"
-          metrics = var.alb_arn_suffix != "" ? [
+          metrics = [
             ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", var.alb_arn_suffix],
             ["AWS/ApplicationELB", "HTTPCode_ELB_5XX_Count", "LoadBalancer", var.alb_arn_suffix],
-          ] : []
+          ]
           period = 300
           stat   = "Sum"
           region = data.aws_region.current.name
