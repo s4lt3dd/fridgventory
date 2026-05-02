@@ -18,6 +18,11 @@ output "cloudfront_domain_name" {
   value       = aws_cloudfront_distribution.frontend.domain_name
 }
 
+output "cloudfront_distribution_id" {
+  description = "ID of the CloudFront distribution (for cache invalidations)"
+  value       = aws_cloudfront_distribution.frontend.id
+}
+
 output "alb_arn_suffix" {
   description = "ARN suffix of the ALB (for CloudWatch metrics)"
   value       = aws_lb.main.arn_suffix
