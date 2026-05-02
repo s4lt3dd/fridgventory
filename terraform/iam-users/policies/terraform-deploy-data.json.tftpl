@@ -114,12 +114,22 @@
       ]
     },
     {
+      "Sid": "SSMDescribeUnscopable",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:DescribeParameters"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": { "aws:RequestedRegion": "${region}" }
+      }
+    },
+    {
       "Sid": "SSMParameterScopedToProject",
       "Effect": "Allow",
       "Action": [
         "ssm:GetParameter",
         "ssm:GetParameters",
-        "ssm:DescribeParameters",
         "ssm:ListTagsForResource",
         "ssm:PutParameter",
         "ssm:DeleteParameter",
@@ -129,30 +139,50 @@
       "Resource": "arn:aws:ssm:${region}:${account_id}:parameter/${project}/*"
     },
     {
+      "Sid": "SecretsManagerListUnscopable",
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:ListSecrets"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": { "aws:RequestedRegion": "${region}" }
+      }
+    },
+    {
       "Sid": "SecretsManagerForRDSManagedSecret",
       "Effect": "Allow",
       "Action": [
         "secretsmanager:DescribeSecret",
         "secretsmanager:GetSecretValue",
-        "secretsmanager:ListSecrets",
         "secretsmanager:ListSecretVersionIds"
       ],
       "Resource": "arn:aws:secretsmanager:${region}:${account_id}:secret:rds!*"
+    },
+    {
+      "Sid": "SNSListUnscopable",
+      "Effect": "Allow",
+      "Action": [
+        "sns:ListTopics",
+        "sns:GetSubscriptionAttributes",
+        "sns:Unsubscribe"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": { "aws:RequestedRegion": "${region}" }
+      }
     },
     {
       "Sid": "SNSScopedToProject",
       "Effect": "Allow",
       "Action": [
         "sns:GetTopicAttributes",
-        "sns:ListTopics",
         "sns:ListSubscriptionsByTopic",
-        "sns:GetSubscriptionAttributes",
         "sns:ListTagsForResource",
         "sns:CreateTopic",
         "sns:DeleteTopic",
         "sns:SetTopicAttributes",
         "sns:Subscribe",
-        "sns:Unsubscribe",
         "sns:TagResource",
         "sns:UntagResource"
       ],
