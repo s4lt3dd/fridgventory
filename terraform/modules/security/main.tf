@@ -37,7 +37,7 @@ data "aws_iam_policy_document" "kms" {
       "kms:CreateGrant"
     ]
     principals {
-      type        = "Service"
+      type = "Service"
       identifiers = [
         "rds.amazonaws.com",
         "secretsmanager.amazonaws.com",

@@ -145,18 +145,18 @@ resource "aws_ecs_task_definition" "api" {
       ]
 
       secrets = [
-        { name = "DB_HOST",     valueFrom = var.db_host_ssm_arn },
-        { name = "DB_PORT",     valueFrom = var.db_port_ssm_arn },
-        { name = "DB_NAME",     valueFrom = var.db_name_ssm_arn },
+        { name = "DB_HOST", valueFrom = var.db_host_ssm_arn },
+        { name = "DB_PORT", valueFrom = var.db_port_ssm_arn },
+        { name = "DB_NAME", valueFrom = var.db_name_ssm_arn },
         { name = "DB_PASSWORD", valueFrom = "${var.db_master_secret_arn}:password::" },
-        { name = "SECRET_KEY",  valueFrom = var.secret_key_ssm_arn },
+        { name = "SECRET_KEY", valueFrom = var.secret_key_ssm_arn },
       ]
 
       environment = [
-        { name = "DB_USER",     value = var.db_username },
-        { name = "REDIS_URL",   value = var.redis_url },
+        { name = "DB_USER", value = var.db_username },
+        { name = "REDIS_URL", value = var.redis_url },
         { name = "ENVIRONMENT", value = var.environment },
-        { name = "DEBUG",       value = "false" },
+        { name = "DEBUG", value = "false" },
       ]
 
       logConfiguration = {
@@ -202,16 +202,16 @@ resource "aws_ecs_task_definition" "worker" {
       essential = true
 
       secrets = [
-        { name = "DB_HOST",     valueFrom = var.db_host_ssm_arn },
-        { name = "DB_PORT",     valueFrom = var.db_port_ssm_arn },
-        { name = "DB_NAME",     valueFrom = var.db_name_ssm_arn },
+        { name = "DB_HOST", valueFrom = var.db_host_ssm_arn },
+        { name = "DB_PORT", valueFrom = var.db_port_ssm_arn },
+        { name = "DB_NAME", valueFrom = var.db_name_ssm_arn },
         { name = "DB_PASSWORD", valueFrom = "${var.db_master_secret_arn}:password::" },
-        { name = "SECRET_KEY",  valueFrom = var.secret_key_ssm_arn },
+        { name = "SECRET_KEY", valueFrom = var.secret_key_ssm_arn },
       ]
 
       environment = [
-        { name = "DB_USER",     value = var.db_username },
-        { name = "REDIS_URL",   value = var.redis_url },
+        { name = "DB_USER", value = var.db_username },
+        { name = "REDIS_URL", value = var.redis_url },
         { name = "ENVIRONMENT", value = var.environment },
       ]
 

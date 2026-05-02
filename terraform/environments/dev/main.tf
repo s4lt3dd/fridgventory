@@ -68,8 +68,8 @@ module "security" {
   environment = var.environment
   enable_waf  = var.enable_waf
   providers = {
-    aws            = aws
-    aws.us_east_1  = aws.us_east_1
+    aws           = aws
+    aws.us_east_1 = aws.us_east_1
   }
 }
 
