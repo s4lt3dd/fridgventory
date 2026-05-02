@@ -2,14 +2,24 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "RDSAll",
+      "Sid": "RDSDescribeUnscopable",
       "Effect": "Allow",
       "Action": [
         "rds:DescribeDBInstances",
         "rds:DescribeDBSubnetGroups",
         "rds:DescribeDBSnapshots",
         "rds:DescribeDBParameterGroups",
-        "rds:DescribeDBEngineVersions",
+        "rds:DescribeDBEngineVersions"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": { "aws:RequestedRegion": "${region}" }
+      }
+    },
+    {
+      "Sid": "RDSMutate",
+      "Effect": "Allow",
+      "Action": [
         "rds:ListTagsForResource",
         "rds:CreateDBInstance",
         "rds:ModifyDBInstance",
