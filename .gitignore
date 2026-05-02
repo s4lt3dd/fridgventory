@@ -46,12 +46,18 @@ yarn-error.log*
 *.tfstate
 *.tfstate.*
 *.tfplan
+tfplan
 .terraformrc
 terraform.rc
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+# Variable files often hold account IDs, ARNs, and other env-specific values
+*.tfvars
+*.tfvars.json
+!example.tfvars
+!*.tfvars.example
 
 # Docker
 .dockerignore

@@ -1,0 +1,20 @@
+project           = "fridgecheck"
+environment       = "dev"
+aws_region        = "eu-west-1"
+api_desired_count = 1
+
+# ECR image URIs. Tag is normally the short git SHA.
+api_image    = "<account-id>.dkr.ecr.<region>.amazonaws.com/fridgecheck-api:<sha>"
+worker_image = "<account-id>.dkr.ecr.<region>.amazonaws.com/fridgecheck-worker:<sha>"
+
+# JWT secret SSM SecureString — created out-of-band before first apply.
+# Get with: aws ssm get-parameter --name /fridgecheck/dev/secret_key --query Parameter.ARN
+secret_key_ssm_arn = "arn:aws:ssm:<region>:<account-id>:parameter/fridgecheck/dev/secret_key"
+
+# Optional: leave empty for HTTP-only ALB and default *.cloudfront.net hostname.
+# acm_certificate_arn_alb        = ""
+# acm_certificate_arn_cloudfront = ""
+# custom_domain_aliases          = []
+
+# Optional: email for CloudWatch alarm notifications.
+sns_alert_email = ""
