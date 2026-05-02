@@ -38,6 +38,76 @@ jobs:
       - uses: actions/checkout@v4
 
       # ---------------------------------------------------------------------
+      # Phase 0: Preflight — fail fast on missing config
+      # ---------------------------------------------------------------------
+      # GitHub renders unset `secrets.X` / `vars.X` references as the empty
+      # string rather than failing the expansion. Without this guard, an
+      # empty SECRET_KEY_SSM_ARN_DEV (etc.) silently propagates and surfaces
+      # 4-8 minutes later as a cryptic IAM or ECS error during Phase 2/3.
+      # Bail at second 0 with a clear message instead.
+      - name: Validate required secrets and variables
+        env:
+          AWS_DEPLOY_ROLE_ARN_DEV: ${{ secrets.AWS_DEPLOY_ROLE_ARN_DEV }}
+          SECRET_KEY_SSM_ARN_DEV:  ${{ secrets.SECRET_KEY_SSM_ARN_DEV }}
+          SNS_ALERT_EMAIL_DEV:     ${{ vars.SNS_ALERT_EMAIL_DEV }}
+        run: |
+          set -u
+          fail=0
+
+          require_secret() {
+            local name="$1" value="$2"
+            if [ -z "$value" ]; then
+              echo "::error::Required repo secret '$name' is unset or empty. Set it under Settings -> Secrets and variables -> Actions -> Secrets."
+              fail=1
+            else
+              echo "  $name: set (length=${#value})"
+            fi
+          }
+
+          require_var() {
+            local name="$1" value="$2"
+            if [ -z "$value" ]; then
+              echo "::error::Required repo variable '$name' is unset. Set it under Settings -> Secrets and variables -> Actions -> Variables."
+              fail=1
+            else
+              echo "  $name: $value"
+            fi
+          }
+
+          require_arn() {
+            local name="$1" value="$2"
+            if [ -z "$value" ]; then
+              return  # already reported by require_secret
+            fi
+            if ! [[ "$value" =~ ^arn:aws: ]]; then
+              echo "::error::Repo secret '$name' does not look like an AWS ARN (must start with 'arn:aws:'). Got a value of length ${#value}."
+              fail=1
+            fi
+          }
+
+          echo "Required secrets:"
+          require_secret AWS_DEPLOY_ROLE_ARN_DEV "$AWS_DEPLOY_ROLE_ARN_DEV"
+          require_secret SECRET_KEY_SSM_ARN_DEV  "$SECRET_KEY_SSM_ARN_DEV"
+          require_arn    AWS_DEPLOY_ROLE_ARN_DEV "$AWS_DEPLOY_ROLE_ARN_DEV"
+          require_arn    SECRET_KEY_SSM_ARN_DEV  "$SECRET_KEY_SSM_ARN_DEV"
+
+          echo "Required variables:"
+          require_var AWS_REGION "$AWS_REGION"
+
+          echo "Optional variables:"
+          if [ -z "$SNS_ALERT_EMAIL_DEV" ]; then
+            echo "  SNS_ALERT_EMAIL_DEV: unset (CloudWatch alarm emails disabled in dev)"
+          else
+            echo "  SNS_ALERT_EMAIL_DEV: $SNS_ALERT_EMAIL_DEV"
+          fi
+
+          if [ "$fail" -ne 0 ]; then
+            echo "::error::Preflight failed. Fix the missing/invalid config above and re-run."
+            exit 1
+          fi
+          echo "Preflight OK."
+
+      # ---------------------------------------------------------------------
       # Phase 1: Auth + image build/push
       # ---------------------------------------------------------------------
 
