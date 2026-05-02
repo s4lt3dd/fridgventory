@@ -14,6 +14,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 # Import all models so they are registered on Base.metadata
 import app.models  # noqa: F401
+from app.config import settings
 from app.database import Base
 
 config = context.config
@@ -23,12 +24,17 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-# Override sqlalchemy.url with the DATABASE_URL environment variable
-# Convert to async driver URL for asyncpg
-database_url = os.environ.get("DATABASE_URL", "")
-if database_url:
-    async_url = database_url.replace("postgresql://", "postgresql+asyncpg://")
-    config.set_main_option("sqlalchemy.url", async_url)
+# Resolve sqlalchemy.url via the app's Settings (handles DATABASE_URL or
+# DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD assembly identically to runtime).
+# Must run before any get_main_option/get_section call, otherwise configparser
+# tries to interpolate the literal `%(DATABASE_URL)s` placeholder in alembic.ini
+# and raises InterpolationMissingOptionError.
+assert settings.database_url is not None  # validator guarantees this
+async_url = settings.database_url.replace("postgresql://", "postgresql+asyncpg://")
+# configparser's BasicInterpolation reads `%` as the start of a `%(name)s`
+# token, so any percent-encoded chars in the password (e.g. `%3C`) blow up
+# at get_section() time. Escape `%` → `%%` so they pass through literally.
+config.set_main_option("sqlalchemy.url", async_url.replace("%", "%%"))
 
 
 def run_migrations_offline() -> None:

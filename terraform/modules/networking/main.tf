@@ -1,3 +1,8 @@
+# Lookup AWS-managed prefix list for CloudFront origin-facing ranges
+data "aws_ec2_managed_prefix_list" "cloudfront" {
+  name = "com.amazonaws.global.cloudfront.origin-facing"
+}
+
 # VPC
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
@@ -131,32 +136,19 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
-# Security Groups
+# --- Security Groups ---
+# ALB and API SGs are defined without inline rules to break the SG-to-SG
+# reference cycle (alb<->api, api<->db, api<->cache). Their rules are declared
+# below as standalone aws_vpc_security_group_*_rule resources, which terraform
+# can sequence after both endpoints exist.
+#
+# Note: per AWS provider docs, an SG cannot mix inline rules with standalone
+# rule resources, so when one rule on an SG is extracted, all must be.
+
 resource "aws_security_group" "alb" {
   name_prefix = "${var.project}-${var.environment}-alb-"
   vpc_id      = aws_vpc.main.id
-  description = "Security group for Application Load Balancer"
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  description = "Security group for Application Load Balancer (CloudFront-only ingress)"
 
   tags = {
     Name        = "${var.project}-${var.environment}-alb-sg"
@@ -170,24 +162,32 @@ resource "aws_security_group" "alb" {
   }
 }
 
+# CloudFront origin uses http-only (see compute module aws_cloudfront_distribution
+# custom_origin_config.origin_protocol_policy), so only port 80 ingress is needed.
+# The CloudFront managed prefix list counts as ~55 rules per reference; doubling
+# it for 80+443 would exceed the default per-SG rule quota.
+resource "aws_vpc_security_group_ingress_rule" "alb_http_from_cloudfront" {
+  security_group_id = aws_security_group.alb.id
+  description       = "HTTP from CloudFront edge nodes"
+  ip_protocol       = "tcp"
+  from_port         = 80
+  to_port           = 80
+  prefix_list_id    = data.aws_ec2_managed_prefix_list.cloudfront.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "alb_to_api" {
+  security_group_id            = aws_security_group.alb.id
+  description                  = "Forward to API tasks on 8000"
+  ip_protocol                  = "tcp"
+  from_port                    = 8000
+  to_port                      = 8000
+  referenced_security_group_id = aws_security_group.api.id
+}
+
 resource "aws_security_group" "api" {
   name_prefix = "${var.project}-${var.environment}-api-"
   vpc_id      = aws_vpc.main.id
   description = "Security group for API ECS tasks"
-
-  ingress {
-    from_port       = 8000
-    to_port         = 8000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
   tags = {
     Name        = "${var.project}-${var.environment}-api-sg"
@@ -201,12 +201,49 @@ resource "aws_security_group" "api" {
   }
 }
 
+resource "aws_vpc_security_group_ingress_rule" "api_from_alb" {
+  security_group_id            = aws_security_group.api.id
+  description                  = "From ALB"
+  ip_protocol                  = "tcp"
+  from_port                    = 8000
+  to_port                      = 8000
+  referenced_security_group_id = aws_security_group.alb.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "api_https_outbound" {
+  security_group_id = aws_security_group.api.id
+  description       = "HTTPS to internet (ECR pulls, SSM, Secrets Manager, Open Food Facts, Anthropic)"
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+  cidr_ipv4         = "0.0.0.0/0"
+}
+
+resource "aws_vpc_security_group_egress_rule" "api_to_database" {
+  security_group_id            = aws_security_group.api.id
+  description                  = "Postgres to RDS"
+  ip_protocol                  = "tcp"
+  from_port                    = 5432
+  to_port                      = 5432
+  referenced_security_group_id = aws_security_group.database.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "api_to_cache" {
+  security_group_id            = aws_security_group.api.id
+  description                  = "Redis to ElastiCache"
+  ip_protocol                  = "tcp"
+  from_port                    = 6379
+  to_port                      = 6379
+  referenced_security_group_id = aws_security_group.cache.id
+}
+
 resource "aws_security_group" "database" {
   name_prefix = "${var.project}-${var.environment}-db-"
   vpc_id      = aws_vpc.main.id
   description = "Security group for RDS PostgreSQL"
 
   ingress {
+    description     = "Postgres from API tasks"
     from_port       = 5432
     to_port         = 5432
     protocol        = "tcp"
@@ -231,6 +268,7 @@ resource "aws_security_group" "cache" {
   description = "Security group for ElastiCache Redis"
 
   ingress {
+    description     = "Redis from API tasks"
     from_port       = 6379
     to_port         = 6379
     protocol        = "tcp"

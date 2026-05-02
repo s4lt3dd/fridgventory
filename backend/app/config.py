@@ -1,4 +1,7 @@
-from pydantic import Field
+from typing import Self
+from urllib.parse import quote
+
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,7 +15,16 @@ class Settings(BaseSettings):
     environment: str = "development"
 
     # Database
-    database_url: str = Field(..., alias="DATABASE_URL")
+    # Two ways to configure:
+    #   1. Local dev / Compose: set DATABASE_URL directly (a full postgresql:// URL).
+    #   2. AWS / RDS-managed master password: set DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD.
+    #      The model validator below assembles DATABASE_URL from the components.
+    database_url: str | None = Field(default=None, alias="DATABASE_URL")
+    db_host: str | None = Field(default=None, alias="DB_HOST")
+    db_port: int | None = Field(default=None, alias="DB_PORT")
+    db_name: str | None = Field(default=None, alias="DB_NAME")
+    db_user: str | None = Field(default=None, alias="DB_USER")
+    db_password: str | None = Field(default=None, alias="DB_PASSWORD")
 
     # Redis
     redis_url: str = Field(..., alias="REDIS_URL")
@@ -38,6 +50,22 @@ class Settings(BaseSettings):
 
     # CORS
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+
+    @model_validator(mode="after")
+    def assemble_database_url(self) -> Self:
+        if self.database_url:
+            return self
+        components = (self.db_host, self.db_port, self.db_name, self.db_user, self.db_password)
+        if all(c is not None for c in components):
+            self.database_url = (
+                f"postgresql://{quote(self.db_user, safe='')}:{quote(self.db_password, safe='')}"
+                f"@{self.db_host}:{self.db_port}/{self.db_name}"
+            )
+            return self
+        raise ValueError(
+            "Database not configured: set DATABASE_URL, "
+            "or all of DB_HOST/DB_PORT/DB_NAME/DB_USER/DB_PASSWORD"
+        )
 
 
 settings = Settings()

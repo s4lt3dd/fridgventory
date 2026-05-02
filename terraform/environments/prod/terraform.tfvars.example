@@ -1,0 +1,20 @@
+project           = "fridgecheck"
+environment       = "prod"
+aws_region        = "eu-west-1"
+api_desired_count = 2
+
+# ECR image URIs. Tag is the release version (e.g. v1.4.0) from release.yml.
+api_image    = "<account-id>.dkr.ecr.<region>.amazonaws.com/fridgecheck-api:<version>"
+worker_image = "<account-id>.dkr.ecr.<region>.amazonaws.com/fridgecheck-worker:<version>"
+
+# JWT secret SSM SecureString — created out-of-band before first apply.
+secret_key_ssm_arn = "arn:aws:ssm:<region>:<account-id>:parameter/fridgecheck/prod/secret_key"
+
+# Prod runs WAF + HTTPS. Cert ARNs come from your ACM certs (CloudFront cert
+# must live in us-east-1 regardless of your app region).
+enable_waf                     = true
+acm_certificate_arn_alb        = "arn:aws:acm:<region>:<account-id>:certificate/<id>"
+acm_certificate_arn_cloudfront = "arn:aws:acm:us-east-1:<account-id>:certificate/<id>"
+custom_domain_aliases          = ["fridgecheck.example.com"]
+
+sns_alert_email = ""

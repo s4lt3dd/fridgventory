@@ -13,6 +13,7 @@ def get_async_url(url: str) -> str:
     )
 
 
+assert settings.database_url is not None, "database_url should be assembled by Settings validator"
 engine = create_async_engine(
     get_async_url(settings.database_url),
     echo=settings.debug,

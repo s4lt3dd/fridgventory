@@ -1,59 +1,59 @@
 variable "project" {
-  description = "Project name used for resource naming and tagging"
-  type        = string
+  type = string
 }
 
 variable "environment" {
-  description = "Deployment environment (dev, staging, prod)"
-  type        = string
+  type = string
 }
 
 variable "vpc_id" {
-  description = "ID of the VPC where the database will be deployed"
-  type        = string
+  type = string
 }
 
 variable "subnet_ids" {
-  description = "List of subnet IDs for the DB subnet group (private subnets)"
-  type        = list(string)
+  type = list(string)
 }
 
 variable "security_group_id" {
-  description = "ID of the security group to attach to the RDS instance"
+  type = string
+}
+
+variable "kms_key_arn" {
+  description = "ARN of the customer-managed KMS key used for storage and Secrets Manager encryption"
   type        = string
 }
 
 variable "instance_class" {
-  description = "RDS instance class"
-  type        = string
-  default     = "db.t3.micro"
+  type    = string
+  default = "db.t3.micro"
 }
 
 variable "db_name" {
-  description = "Name of the PostgreSQL database"
-  type        = string
-  default     = "fridgecheck"
+  type    = string
+  default = "fridgecheck"
 }
 
 variable "db_username" {
-  description = "Master username for the RDS instance"
-  type        = string
+  type = string
 }
 
 variable "allocated_storage" {
-  description = "Allocated storage in GiB for the RDS instance"
-  type        = number
-  default     = 20
+  type    = number
+  default = 20
 }
 
 variable "backup_retention_days" {
-  description = "Number of days to retain automated backups"
-  type        = number
-  default     = 7
+  type    = number
+  default = 7
 }
 
 variable "multi_az" {
-  description = "Enable Multi-AZ deployment for high availability"
+  type    = bool
+  default = false
+}
+
+variable "deletion_protection" {
+  description = "Enable deletion protection. Default true; only set false for short-lived dev stacks you intend to tear down."
   type        = bool
-  default     = false
+  default     = true
 }

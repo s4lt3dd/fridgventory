@@ -1,36 +1,35 @@
 variable "project" {
-  description = "Project name used for resource naming and tagging"
-  type        = string
+  type = string
 }
 
 variable "environment" {
-  description = "Deployment environment (dev, staging, prod)"
-  type        = string
+  type = string
 }
 
 variable "vpc_id" {
-  description = "ID of the VPC"
-  type        = string
+  type = string
 }
 
 variable "subnet_ids" {
-  description = "List of private subnet IDs for the cache subnet group"
-  type        = list(string)
+  type = list(string)
 }
 
 variable "security_group_id" {
-  description = "ID of the security group to attach to the Redis cluster"
+  type = string
+}
+
+variable "kms_key_arn" {
+  description = "ARN of the customer-managed KMS key used for at-rest encryption"
   type        = string
 }
 
 variable "node_type" {
-  description = "ElastiCache node type"
-  type        = string
-  default     = "cache.t3.micro"
+  type    = string
+  default = "cache.t3.micro"
 }
 
-variable "num_cache_nodes" {
-  description = "Number of cache nodes in the cluster"
+variable "num_cache_clusters" {
+  description = "Number of cache nodes in the replication group (>=2 enables Multi-AZ + automatic failover)"
   type        = number
   default     = 1
 }
