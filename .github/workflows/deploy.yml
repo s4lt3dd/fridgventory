@@ -280,31 +280,68 @@ jobs:
           # deploys: cold ECR pull + container startup + ECS healthcheck
           # startPeriod + ALB registration + old-task drain on force-new
           # routinely add up to 12-15 min. Custom loop also gives us
-          # visibility into rollout progression instead of an opaque wait.
+          # visibility into rollout progression and surfaces aws-cli errors
+          # instead of an opaque waiter timeout.
           DEADLINE_SECONDS: "1500"
+        # Note: we deliberately disable `-e` for this step. GitHub Actions
+        # runs bash with `-eo pipefail` by default, but under -e any non-zero
+        # exit from a transient `aws` call (throttling, brief network blip)
+        # or from `read` reaching EOF kills the whole step instead of being
+        # retried on the next loop iteration. We check rc explicitly instead.
         run: |
-          set -euo pipefail
-          SERVICES="fridgecheck-dev-api fridgecheck-dev-worker"
+          set +e
+          set -uo pipefail
+          SERVICES=(fridgecheck-dev-api fridgecheck-dev-worker)
           end=$((SECONDS + DEADLINE_SECONDS))
+          consecutive_errors=0
+
+          # Query each service individually so a per-service error doesn't
+          # contaminate the whole batch, and we can identify which one failed.
+          probe_service() {
+            local service="$1"
+            local out rc
+            out=$(aws ecs describe-services \
+                    --cluster "$CLUSTER" --services "$service" \
+                    --query 'services[0].[deployments[0].rolloutState || `NONE`, runningCount, desiredCount, length(deployments)]' \
+                    --output text 2>&1)
+            rc=$?
+            if [ $rc -ne 0 ]; then
+              echo "AWS_ERROR rc=$rc $out"
+              return $rc
+            fi
+            echo "$out"
+          }
 
           while [ $SECONDS -lt $end ]; do
-            # rolloutState: IN_PROGRESS | COMPLETED | FAILED
-            # We require both services to have a single deployment in COMPLETED state.
-            read -r api_state api_running api_desired api_deployments \
-                    wkr_state wkr_running wkr_desired wkr_deployments < <(
-              aws ecs describe-services \
-                --cluster "$CLUSTER" --services $SERVICES \
-                --query 'services[].[deployments[0].rolloutState,runningCount,desiredCount,length(deployments)]' \
-                --output text | tr '\n' ' '
-            )
+            api_line=$(probe_service "${SERVICES[0]}") ; api_rc=$?
+            wkr_line=$(probe_service "${SERVICES[1]}") ; wkr_rc=$?
+
+            if [ $api_rc -ne 0 ] || [ $wkr_rc -ne 0 ]; then
+              echo "$(date -u +%H:%M:%S)  aws describe-services failed; api: $api_line ; worker: $wkr_line"
+              consecutive_errors=$((consecutive_errors + 1))
+              if [ $consecutive_errors -ge 5 ]; then
+                echo "::error::aws describe-services failed 5 times in a row; aborting."
+                exit 1
+              fi
+              sleep 20
+              continue
+            fi
+            consecutive_errors=0
+
+            # Each line is TAB-separated: STATE  RUNNING  DESIRED  DEPLOYMENTS
+            read -r api_state api_running api_desired api_deployments <<<"$api_line"
+            read -r wkr_state wkr_running wkr_desired wkr_deployments <<<"$wkr_line"
 
             printf '%s  api: state=%s running=%s/%s deployments=%s | worker: state=%s running=%s/%s deployments=%s\n' \
-              "$(date -u +%H:%M:%S)" "$api_state" "$api_running" "$api_desired" "$api_deployments" \
-              "$wkr_state" "$wkr_running" "$wkr_desired" "$wkr_deployments"
+              "$(date -u +%H:%M:%S)" \
+              "${api_state:-?}" "${api_running:-?}" "${api_desired:-?}" "${api_deployments:-?}" \
+              "${wkr_state:-?}" "${wkr_running:-?}" "${wkr_desired:-?}" "${wkr_deployments:-?}"
 
             if [ "$api_state" = "FAILED" ] || [ "$wkr_state" = "FAILED" ]; then
-              echo "::error::A service deployment FAILED. Investigate via:"
-              echo "  aws ecs describe-services --cluster $CLUSTER --services $SERVICES --query 'services[].events[0:5]'"
+              echo "::error::A service deployment FAILED. Recent events:"
+              aws ecs describe-services --cluster "$CLUSTER" --services "${SERVICES[@]}" \
+                --query 'services[].{name:serviceName, events:events[0:5].[createdAt,message]}' \
+                --output table || true
               exit 1
             fi
 
@@ -319,10 +356,9 @@ jobs:
           done
 
           echo "::error::Services did not stabilise within $((DEADLINE_SECONDS / 60)) minutes."
-          aws ecs describe-services \
-            --cluster "$CLUSTER" --services $SERVICES \
+          aws ecs describe-services --cluster "$CLUSTER" --services "${SERVICES[@]}" \
             --query 'services[].{name:serviceName, events:events[0:5].[createdAt,message]}' \
-            --output table
+            --output table || true
           exit 1
 
       # ---------------------------------------------------------------------
