@@ -275,12 +275,55 @@ jobs:
       - name: Wait for services to stabilise
         env:
           CLUSTER: ${{ steps.tf.outputs.ecs_cluster }}
+          # 25 min ceiling. The built-in `aws ecs wait services-stable` is
+          # only 10 min (40 attempts × 15s) which is too tight for first
+          # deploys: cold ECR pull + container startup + ECS healthcheck
+          # startPeriod + ALB registration + old-task drain on force-new
+          # routinely add up to 12-15 min. Custom loop also gives us
+          # visibility into rollout progression instead of an opaque wait.
+          DEADLINE_SECONDS: "1500"
         run: |
-          # Default wait = 40 min (15s × 40 attempts × backoff). Run in
-          # parallel so worker doesn't add to api's wall time.
-          aws ecs wait services-stable \
-            --cluster "$CLUSTER" \
-            --services fridgecheck-dev-api fridgecheck-dev-worker
+          set -euo pipefail
+          SERVICES="fridgecheck-dev-api fridgecheck-dev-worker"
+          end=$((SECONDS + DEADLINE_SECONDS))
+
+          while [ $SECONDS -lt $end ]; do
+            # rolloutState: IN_PROGRESS | COMPLETED | FAILED
+            # We require both services to have a single deployment in COMPLETED state.
+            read -r api_state api_running api_desired api_deployments \
+                    wkr_state wkr_running wkr_desired wkr_deployments < <(
+              aws ecs describe-services \
+                --cluster "$CLUSTER" --services $SERVICES \
+                --query 'services[].[deployments[0].rolloutState,runningCount,desiredCount,length(deployments)]' \
+                --output text | tr '\n' ' '
+            )
+
+            printf '%s  api: state=%s running=%s/%s deployments=%s | worker: state=%s running=%s/%s deployments=%s\n' \
+              "$(date -u +%H:%M:%S)" "$api_state" "$api_running" "$api_desired" "$api_deployments" \
+              "$wkr_state" "$wkr_running" "$wkr_desired" "$wkr_deployments"
+
+            if [ "$api_state" = "FAILED" ] || [ "$wkr_state" = "FAILED" ]; then
+              echo "::error::A service deployment FAILED. Investigate via:"
+              echo "  aws ecs describe-services --cluster $CLUSTER --services $SERVICES --query 'services[].events[0:5]'"
+              exit 1
+            fi
+
+            if [ "$api_state" = "COMPLETED" ] && [ "$wkr_state" = "COMPLETED" ] \
+               && [ "$api_deployments" = "1" ] && [ "$wkr_deployments" = "1" ] \
+               && [ "$api_running" = "$api_desired" ] && [ "$wkr_running" = "$wkr_desired" ]; then
+              echo "Both services stable."
+              exit 0
+            fi
+
+            sleep 20
+          done
+
+          echo "::error::Services did not stabilise within $((DEADLINE_SECONDS / 60)) minutes."
+          aws ecs describe-services \
+            --cluster "$CLUSTER" --services $SERVICES \
+            --query 'services[].{name:serviceName, events:events[0:5].[createdAt,message]}' \
+            --output table
+          exit 1
 
       # ---------------------------------------------------------------------
       # Phase 5: Build + deploy frontend (S3 + CloudFront invalidation)
