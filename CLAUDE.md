@@ -112,6 +112,7 @@ The api container also bind-mounts source. Adding a Python dep means rebuilding 
 | `REDIS_URL` | api/worker | `redis://redis:6379/0` |
 | `SECRET_KEY` | api | JWT signing — REQUIRED in prod |
 | `ANTHROPIC_API_KEY` | api/worker | Optional in dev (rescue-recipe endpoint returns 503 if absent) — never expose to frontend |
+| `ANTHROPIC_MODEL` | api/worker | Model ID passed to the Messages API. Defaults to `claude-sonnet-4-20250514`. Override to roll model upgrades without code changes; current IDs at <https://docs.anthropic.com/en/docs/about-claude/models> |
 | `CORS_ORIGINS` | api | Comma-separated; nginx in front so `http://localhost` is enough in dev |
 
 Frontend has its own `VITE_API_URL` baked at build time; in dev it defaults to `/api/v1` (nginx-proxied).

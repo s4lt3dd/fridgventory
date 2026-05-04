@@ -108,7 +108,7 @@ JWT: HS256, 30-min access tokens, 7-day refresh tokens. The refresh token is a s
   from anthropic import AsyncAnthropic
   client = AsyncAnthropic(api_key=settings.anthropic_api_key)
   msg = await client.messages.create(
-      model="claude-sonnet-4-20250514",
+      model=settings.anthropic_model,
       max_tokens=2048,
       system=SYSTEM_PROMPT,
       messages=[{"role": "user", "content": user_prompt}],
