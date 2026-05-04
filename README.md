@@ -7,17 +7,33 @@
 
 ---
 
-## Screenshots
+## What this is
 
-> _Screenshots coming soon — run `docker compose up` to see it in action._
+FridgeCheck is a pantry-tracking SaaS aimed at households who want to cut food waste. Users register, create or join a household, log items with expiry dates, and get warned before food goes off. Two AI-flavoured features sit on top: in-browser barcode scanning that prefills item metadata via Open Food Facts, and "Rescue Recipes" — when 3+ items expire within 3 days, a backend-proxied call to Claude (`claude-sonnet-4-20250514`) suggests recipes that use them up.
 
-| Dashboard | Add Item | Recipe Suggestions |
-|-----------|----------|--------------------|
-| _Pantry grouped by expiry urgency_ | _Smart-default form with category hints_ | _Recipes based on what's about to expire_ |
+The audience for this README is engineers. If you're new to the project, start with [`docs/onboarding.md`](docs/onboarding.md).
 
 ---
 
-## Quick Start
+## Tech stack at a glance
+
+| Layer | Technology |
+|-------|-----------|
+| API | FastAPI 0.111 (Python 3.11), Pydantic v2, async SQLAlchemy 2 |
+| Database | PostgreSQL 16, Alembic migrations |
+| Cache / rate limit | Redis 7 (asyncio client) |
+| Worker | APScheduler 3.10, in-process |
+| Frontend | React 18, TypeScript, Vite 5, Tailwind CSS, TanStack Query v5 |
+| Auth | JWT (HS256) access tokens + opaque UUID refresh tokens, refresh rotation |
+| AI | Anthropic SDK (`anthropic==0.34.2`) — backend-only, model `claude-sonnet-4-20250514` |
+| Reverse proxy | nginx 1.27 |
+| Local dev | Docker Compose |
+| Cloud | AWS ECS Fargate, RDS Postgres, ElastiCache Redis (Terraform) |
+| CI/CD | GitHub Actions, OIDC to AWS, semantic-release on `main` |
+
+---
+
+## Quick start
 
 The only prerequisite is [Docker](https://docs.docker.com/get-docker/).
 
@@ -28,140 +44,38 @@ cp .env.example .env
 docker compose up
 ```
 
-Then open [http://localhost](http://localhost) in your browser.
-
-- **API docs**: [http://localhost/api/docs](http://localhost/api/docs)
-- **Frontend**: [http://localhost](http://localhost)
-- **API directly**: [http://localhost:8000](http://localhost:8000)
-
-That's it. No database setup, no local dependencies to install.
+Open <http://localhost:5173> for the frontend (Vite dev server) and <http://localhost:8000/api/docs> for the live OpenAPI UI. See [`docs/onboarding.md`](docs/onboarding.md) for the verified first-run checklist.
 
 ---
 
-## Tech Stack
+## Documentation map
 
-| Layer | Technology | Why |
-|-------|-----------|-----|
-| **API** | FastAPI (Python 3.11) | Async-first, automatic OpenAPI docs, Pydantic v2 validation |
-| **Database** | PostgreSQL 16 | ACID compliance, strong relational model for households/memberships |
-| **Cache / Queue** | Redis 7 | Rate limiting, token storage, background job queue |
-| **Background Worker** | APScheduler | Lightweight scheduler, no separate broker needed at this scale |
-| **Frontend** | React 18 + TypeScript + Vite | Fast iteration, type safety, great DX |
-| **State Management** | TanStack Query v5 | Server state, caching, background refetch built-in |
-| **Styling** | Tailwind CSS | Utility-first, mobile-first, no context switching |
-| **IaC** | Terraform | Declarative, provider-agnostic, mature ecosystem |
-| **CI/CD** | GitHub Actions | Native GitHub integration, OIDC for AWS auth |
-| **Container Runtime** | Docker / ECS Fargate | No server management, scales to zero |
-
----
-
-## Architecture
-
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for:
-
-- Data flow diagrams (item addition, expiry pipeline, invite flow)
-- Scalability path from 10 to 100,000 households
-- Security considerations
-- Trade-off decisions
+| Doc | Read it when… |
+|-----|---------------|
+| [`docs/onboarding.md`](docs/onboarding.md) | You're setting up a dev machine for the first time. |
+| [`docs/architecture.md`](docs/architecture.md) | You want a tour of how the system fits together. |
+| [`docs/development-workflow.md`](docs/development-workflow.md) | You're ready to make a change — running, testing, branching, debugging. |
+| [`docs/api-reference.md`](docs/api-reference.md) | You're integrating against the HTTP API. |
+| [`docs/glossary.md`](docs/glossary.md) | You hit a domain term you don't recognise. |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | You're opening a PR — branching, commit format, code style. |
+| [`CLAUDE.md`](CLAUDE.md), [`backend/CLAUDE.md`](backend/CLAUDE.md), [`frontend/CLAUDE.md`](frontend/CLAUDE.md) | You're working with an AI coding assistant — these are its operational notes. |
+| [`design-system/fridgecheck/MASTER.md`](design-system/fridgecheck/MASTER.md) | You're touching anything visual. |
+| [`terraform/README.md`](terraform/README.md) | You're touching infrastructure. |
 
 ---
 
-## API Documentation
-
-Once running, the auto-generated Swagger UI is available at:
-
-```
-http://localhost/api/docs
-```
-
-ReDoc (alternative renderer):
-
-```
-http://localhost/api/redoc
-```
-
-The OpenAPI spec can be downloaded at `/api/openapi.json`.
-
----
-
-## Project Structure
+## Project structure
 
 ```
 fridgecheck/
-├── backend/          # FastAPI application
-│   ├── app/
-│   │   ├── api/v1/  # Route handlers
-│   │   ├── models/  # SQLAlchemy ORM models
-│   │   ├── schemas/ # Pydantic request/response models
-│   │   ├── services/# Business logic layer
-│   │   ├── repositories/ # Data access layer
-│   │   └── workers/ # Background scheduler
-│   ├── migrations/  # Alembic migrations
-│   └── tests/       # pytest test suite
-├── frontend/         # React + TypeScript application
-│   └── src/
-│       ├── api/     # HTTP client layer
-│       ├── components/
-│       ├── hooks/   # TanStack Query hooks
-│       └── pages/
-├── docker/           # Dockerfiles and nginx config
-├── terraform/        # Infrastructure as Code
-│   ├── modules/     # Reusable Terraform modules
-│   └── environments/# dev and prod configurations
-└── .github/
-    └── workflows/   # CI, release, and deploy pipelines
+├── backend/         FastAPI application (see backend/CLAUDE.md)
+├── frontend/        React + TypeScript SPA (see frontend/CLAUDE.md)
+├── docker/          Dockerfiles + nginx config
+├── docs/            Engineering documentation (start here)
+├── design-system/   Visual design tokens, page-level rules
+├── terraform/       AWS infrastructure (modules + dev/prod envs)
+└── .github/workflows/  CI, release, deploy pipelines
 ```
-
----
-
-## Contributing
-
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for:
-- Branch naming conventions
-- Commit message format (Conventional Commits)
-- PR process and review guidelines
-- Running tests locally
-
-### Quick contribution setup
-
-```bash
-# Backend
-cd backend
-python -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
-pytest
-
-# Frontend
-cd frontend
-npm install
-npm test
-```
-
----
-
-## Deployment
-
-The full deployment pipeline is automated via GitHub Actions:
-
-1. **Every PR** runs the CI suite (lint, test, security scan, build)
-2. **Merging to `main`** triggers semantic versioning and creates a GitHub Release
-3. **Each release** automatically deploys to **dev** then awaits approval for **prod**
-
-Infrastructure is provisioned on AWS using the Terraform modules in `terraform/`. See the [Terraform README](terraform/README.md) for setup instructions.
-
-The pipeline uses AWS OIDC for authentication — no stored credentials.
-
----
-
-## Roadmap
-
-- [ ] **Barcode scanning** — scan barcodes via camera to auto-fill item details
-- [ ] **Push notifications** — browser push and mobile PWA notifications for expiry alerts
-- [ ] **AI recipe suggestions** — Claude-powered personalised recipe recommendations
-- [ ] **Shopping list generation** — auto-generate a shopping list from frequently used expired items
-- [ ] **Multi-language support** — i18n for international households
-- [ ] **Nutrition tracking** — link items to nutritional databases
-- [ ] **Meal planning** — plan weekly meals around what's in the pantry
 
 ---
 
