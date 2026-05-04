@@ -8,8 +8,8 @@ api_image    = "<account-id>.dkr.ecr.<region>.amazonaws.com/fridgecheck-api:<sha
 worker_image = "<account-id>.dkr.ecr.<region>.amazonaws.com/fridgecheck-worker:<sha>"
 
 # JWT secret SSM SecureString — created out-of-band before first apply.
-# Get with: aws ssm get-parameter --name /fridgecheck/dev/secret_key --query Parameter.ARN
-secret_key_ssm_arn = "arn:aws:ssm:<region>:<account-id>:parameter/fridgecheck/dev/secret_key"
+# Get with: aws ssm get-parameter --name /fridgecheck/dev/jwt_secret_key --query Parameter.ARN
+secret_key_ssm_arn = "arn:aws:ssm:<region>:<account-id>:parameter/fridgecheck/dev/jwt_secret_key"
 
 # Optional: leave empty for HTTP-only ALB and default *.cloudfront.net hostname.
 # acm_certificate_arn_alb        = ""
