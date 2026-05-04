@@ -21,14 +21,17 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
-      - name: Install ruff and mypy
-        run: pip install ruff==0.4.4 mypy==1.10.0
+      # Install the project so mypy resolves real third-party types instead of
+      # treating every import as Any. ruff and mypy come from the [dev] extras.
+      - name: Install backend (with dev tools)
+        run: cd backend && pip install -e ".[dev]"
       - name: Ruff lint
-        run: ruff check backend/
+        run: cd backend && ruff check .
       - name: Ruff format check
-        run: ruff format --check backend/
+        run: cd backend && ruff format --check .
+      # Run mypy from backend/ so it picks up [tool.mypy] in pyproject.toml.
       - name: mypy type check
-        run: mypy backend/app/
+        run: cd backend && mypy app/
 
   lint-frontend:
     name: Lint Frontend
