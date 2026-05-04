@@ -47,6 +47,7 @@ class Settings(BaseSettings):
 
     # Anthropic (rescue recipes)
     anthropic_api_key: str | None = Field(default=None, alias="ANTHROPIC_API_KEY")
+    anthropic_model: str = Field(default="claude-sonnet-4-20250514", alias="ANTHROPIC_MODEL")
 
     # CORS
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
