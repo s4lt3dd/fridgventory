@@ -3,7 +3,9 @@ from datetime import UTC, datetime, timedelta
 
 import structlog
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+from pwdlib import PasswordHash
+from pwdlib.hashers.argon2 import Argon2Hasher
+from pwdlib.hashers.bcrypt import BcryptHasher
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -13,7 +15,9 @@ from app.schemas.auth import TokenResponse
 
 logger = structlog.get_logger()
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# argon2id is the primary hasher for new passwords; bcrypt stays in the chain
+# so existing $2b$ hashes minted by the previous passlib-based service still verify.
+password_hash = PasswordHash((Argon2Hasher(), BcryptHasher()))
 
 
 class AuthError(Exception):
@@ -31,11 +35,11 @@ class AuthService:
 
     @staticmethod
     def hash_password(password: str) -> str:
-        return pwd_context.hash(password)
+        return password_hash.hash(password)
 
     @staticmethod
     def verify_password(plain: str, hashed: str) -> bool:
-        return pwd_context.verify(plain, hashed)
+        return password_hash.verify(plain, hashed)
 
     # ------------------------------------------------------------------
     # Token helpers

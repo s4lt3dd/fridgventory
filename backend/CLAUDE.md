@@ -7,7 +7,7 @@ Module-specific guidance. The root `CLAUDE.md` covers the project at large.
 ## Stack
 
 - **Python 3.11**, FastAPI 0.111, Pydantic v2, SQLAlchemy 2 (async), asyncpg
-- **Auth**: passlib[bcrypt] + python-jose JWT (HS256), refresh-token rotation
+- **Auth**: pwdlib (argon2id for new hashes, bcrypt kept for legacy verification) + python-jose JWT (HS256), refresh-token rotation
 - **Background jobs**: APScheduler 3.10 (in-process, in the `worker` container)
 - **HTTP client**: httpx (for outbound — Open Food Facts, Anthropic SDK)
 - **Logging**: structlog, JSON-ish output
