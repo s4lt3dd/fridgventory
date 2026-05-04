@@ -1,5 +1,6 @@
 import uuid
 from datetime import UTC, datetime, timedelta
+from typing import Any, cast
 
 import structlog
 from jose import JWTError, jwt
@@ -54,7 +55,7 @@ class AuthService:
             "iat": datetime.now(UTC),
             "type": "access",
         }
-        return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
+        return cast(str, jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm))
 
     @staticmethod
     def create_refresh_token() -> str:
@@ -62,12 +63,12 @@ class AuthService:
         return str(uuid.uuid4())
 
     @staticmethod
-    def decode_access_token(token: str) -> dict | None:
+    def decode_access_token(token: str) -> dict[str, Any] | None:
         try:
             payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
             if payload.get("type") != "access":
                 return None
-            return payload  # type: ignore[return-value]
+            return cast(dict[str, Any], payload)
         except JWTError:
             return None
 

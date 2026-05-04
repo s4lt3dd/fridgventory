@@ -98,7 +98,7 @@ async def suggest_rescue_recipes(
         )
 
     today = date.today()
-    item_dicts = [
+    item_dicts: list[dict[str, Any]] = [
         {
             "id": it.id,
             "name": it.name,
@@ -126,7 +126,7 @@ async def suggest_rescue_recipes(
     user_prompt = _build_user_prompt(item_dicts)
 
     try:
-        from anthropic import APIError, AsyncAnthropic  # type: ignore
+        from anthropic import APIError, AsyncAnthropic
 
         client = AsyncAnthropic(api_key=api_key)
         msg = await client.messages.create(

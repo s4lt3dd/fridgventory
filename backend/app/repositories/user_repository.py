@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,7 +41,7 @@ class UserRepository:
         await self.db.refresh(user)
         return user
 
-    async def update(self, user_id: uuid.UUID, data: dict) -> User | None:
+    async def update(self, user_id: uuid.UUID, data: dict[str, Any]) -> User | None:
         user = await self.get_by_id(user_id)
         if not user:
             return None

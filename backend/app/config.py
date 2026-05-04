@@ -55,8 +55,13 @@ class Settings(BaseSettings):
     def assemble_database_url(self) -> Self:
         if self.database_url:
             return self
-        components = (self.db_host, self.db_port, self.db_name, self.db_user, self.db_password)
-        if all(c is not None for c in components):
+        if (
+            self.db_host is not None
+            and self.db_port is not None
+            and self.db_name is not None
+            and self.db_user is not None
+            and self.db_password is not None
+        ):
             self.database_url = (
                 f"postgresql://{quote(self.db_user, safe='')}:{quote(self.db_password, safe='')}"
                 f"@{self.db_host}:{self.db_port}/{self.db_name}"
@@ -68,4 +73,5 @@ class Settings(BaseSettings):
         )
 
 
-settings = Settings()
+# pydantic-settings populates required fields from env vars at runtime; mypy can't see that.
+settings = Settings()  # type: ignore[call-arg]

@@ -1,5 +1,6 @@
 import uuid
 from datetime import date
+from typing import Any
 
 import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -106,7 +107,7 @@ class ItemService:
         if not item or item.household_id != household_id:
             return None
 
-        update_dict: dict = {}
+        update_dict: dict[str, Any] = {}
         if data.name is not None:
             update_dict["name"] = data.name
         if data.category is not None:

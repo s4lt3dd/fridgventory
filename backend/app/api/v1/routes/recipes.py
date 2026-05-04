@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.dependencies import get_current_user, require_household_member
 from app.database import get_db
+from app.models.household import HouseholdMember
 from app.models.user import User
 from app.schemas.recipe import (
     RecipeSuggestion,
@@ -25,7 +26,7 @@ household_router = APIRouter(prefix="/households/{household_id}/recipes", tags=[
 @household_router.get("", response_model=list[RecipeSuggestion])
 async def get_recipe_suggestions(
     household_id: uuid.UUID,
-    _member=Depends(require_household_member),
+    _member: HouseholdMember = Depends(require_household_member),
     db: AsyncSession = Depends(get_db),
 ) -> list[RecipeSuggestion]:
     item_service = ItemService(db)
