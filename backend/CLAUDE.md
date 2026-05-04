@@ -27,7 +27,7 @@ route (api/v1/routes/*.py)
 
 Cross-cutting:
 - `schemas/*.py` — Pydantic request/response types. Routes consume + return these. Services may accept them but should generally take primitives + return ORM models or DTOs.
-- `dependencies.py` — `get_current_user`, `require_household_member`, etc. Composed via `Depends(...)` in routes.
+- `api/v1/dependencies.py` — `get_current_user`, `require_household_member`, etc. Composed via `Depends(...)` in routes. (Top-level `app/dependencies.py` only re-exports `get_db`.)
 - `database.py` — `Base`, async `engine`, `async_session`, `get_db()` async generator dependency.
 - `config.py` — `Settings` class (pydantic-settings). All env vars go here, accessed via `from app.config import settings`.
 
@@ -88,7 +88,7 @@ docker compose exec api alembic downgrade -1
 - `POST /api/v1/auth/logout` → revoke refresh token server-side
 - `GET /api/v1/auth/me` → current user (uses access token)
 
-JWT: HS256, 15-min access tokens, 30-day refresh tokens. Settings: `JWT_SECRET_KEY`, `JWT_ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`, `REFRESH_TOKEN_EXPIRE_DAYS`.
+JWT: HS256, 30-min access tokens, 7-day refresh tokens. The refresh token is a server-side opaque UUID4 stored in the `refresh_tokens` table — not a JWT. Env vars: `SECRET_KEY`, `ALGORITHM`, `ACCESS_TOKEN_EXPIRE_MINUTES`, `REFRESH_TOKEN_EXPIRE_DAYS`.
 
 `get_current_user` decodes the access token and loads the user. `require_household_member(household_id)` is composed on top — use it on every household-scoped route.
 
@@ -123,9 +123,10 @@ JWT: HS256, 15-min access tokens, 30-day refresh tokens. Settings: `JWT_SECRET_K
 ## Testing patterns
 
 `tests/conftest.py` provides:
-- `db` fixture — async session inside a transaction that rolls back on teardown
+- `setup_database` — autouse fixture that creates and drops the full schema per test (heavier than rollback; means tests can `commit()` freely)
+- `db_session` fixture — async session against the freshly-created schema
 - `client` fixture — `httpx.AsyncClient` against the FastAPI app with `app.dependency_overrides[get_db] = ...`
-- `auth_headers` fixture — registers a user and returns `Authorization: Bearer ...`
+- `test_user` / `test_household` / `test_item` / `auth_headers` fixtures — pre-built rows. `auth_headers` mints a token directly via `AuthService.create_access_token`, bypassing the login route.
 
 Idiom:
 ```python
@@ -135,7 +136,7 @@ async def test_create_household(client, auth_headers):
     assert resp.json()["name"] == "Smiths"
 ```
 
-Don't share state across tests. Don't `commit()` in tests — let the rollback handle it.
+Don't share state across tests. The autouse `setup_database` fixture drops + recreates the schema each test, so commits are fine — but only inside the test, never at module scope.
 
 ## Logging
 

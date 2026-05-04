@@ -6,6 +6,8 @@ For module-specific guidance see:
 - `backend/CLAUDE.md` — FastAPI app, models, services, migrations
 - `frontend/CLAUDE.md` — React app, design system, hooks, conventions
 
+For the **current roadmap and prioritisation** — what to build next, the 2-month app-store launch order, the auth migration plan, resolved decisions — see [`docs/research/PLAN.md`](docs/research/PLAN.md). It is the source of truth for sequencing and supersedes any older sequencing notes elsewhere in the repo. Historical Q&A behind those decisions is archived in [`docs/research/archive/`](docs/research/archive/).
+
 ---
 
 ## What FridgeCheck is
@@ -53,8 +55,8 @@ backend/                FastAPI app — see backend/CLAUDE.md
     workers/            APScheduler job definitions
     config.py           pydantic-settings — Settings class
     database.py         Async engine, Base, get_db dependency
-    dependencies.py     Auth + permission dependencies for routes
-    main.py             FastAPI app factory, lifespan (Redis client, scheduler)
+    dependencies.py     Re-exports `get_db` only. Auth deps live at api/v1/dependencies.py
+    main.py             FastAPI app factory, lifespan (Redis client), CORS + correlation-ID + rate-limit middleware
   migrations/           Alembic — versions/0001_initial.py is the full initial schema
   tests/                pytest-asyncio, see test_auth/items/households
   pyproject.toml        Hatchling package config + deps + ruff/mypy/pytest config
@@ -108,11 +110,11 @@ The api container also bind-mounts source. Adding a Python dep means rebuilding 
 | `POSTGRES_PASSWORD` | root `.env` | DB password; default `fridgecheck_dev` |
 | `DATABASE_URL` | api/worker | Sync URL — Alembic converts to `postgresql+asyncpg://` automatically |
 | `REDIS_URL` | api/worker | `redis://redis:6379/0` |
-| `JWT_SECRET_KEY` | api | Token signing — REQUIRED in prod |
+| `SECRET_KEY` | api | JWT signing — REQUIRED in prod |
 | `ANTHROPIC_API_KEY` | api/worker | Optional in dev (rescue-recipe endpoint returns 503 if absent) — never expose to frontend |
 | `CORS_ORIGINS` | api | Comma-separated; nginx in front so `http://localhost` is enough in dev |
 
-Frontend has its own `VITE_API_BASE_URL` baked at build time; in dev it's just `/api/v1` (nginx-proxied).
+Frontend has its own `VITE_API_URL` baked at build time; in dev it defaults to `/api/v1` (nginx-proxied).
 
 ## Common gotchas (real ones we've hit)
 
@@ -153,7 +155,7 @@ docker compose exec frontend npm run build          # type-check + production bu
 docker compose exec frontend npm test               # vitest (if configured)
 ```
 
-Backend tests use a separate transaction per test (rollback at teardown) — see `tests/conftest.py`. Don't commit changes to that conftest without understanding the fixture order.
+Backend tests use an autouse fixture that creates and drops the full schema per test — see `tests/conftest.py`. (This is heavier than the rollback pattern; tests `commit()` directly.) Don't change that conftest without understanding the fixture order.
 
 Always run `npm run build` before declaring a frontend change done. Vite dev mode is forgiving in ways the production build is not.
 
