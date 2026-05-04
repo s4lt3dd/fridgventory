@@ -1,3 +1,5 @@
+from typing import Any
+
 import httpx
 import structlog
 
@@ -74,15 +76,19 @@ class RecipeService:
         all_suggestions.sort(key=lambda s: len(s.matched_ingredients), reverse=True)
         return all_suggestions[:10]
 
-    async def _fetch_from_api(self, client: httpx.AsyncClient, ingredient: str) -> list[dict]:
+    async def _fetch_from_api(
+        self, client: httpx.AsyncClient, ingredient: str
+    ) -> list[dict[str, Any]]:
         url = f"{self.api_url}/filter.php"
         response = await client.get(url, params={"i": ingredient})
         response.raise_for_status()
         data = response.json()
-        meals = data.get("meals") or []
-        return meals  # type: ignore[return-value]
+        meals: list[dict[str, Any]] = data.get("meals") or []
+        return meals
 
-    def _map_meal_to_suggestion(self, meal: dict, matched_ingredient: str) -> RecipeSuggestion:
+    def _map_meal_to_suggestion(
+        self, meal: dict[str, Any], matched_ingredient: str
+    ) -> RecipeSuggestion:
         return RecipeSuggestion(
             id=meal.get("idMeal", ""),
             name=meal.get("strMeal", "Unknown"),

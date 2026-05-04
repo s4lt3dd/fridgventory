@@ -1,5 +1,6 @@
 import uuid
 from datetime import UTC, date, datetime, timedelta
+from typing import Any
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -96,7 +97,7 @@ class ItemRepository:
         await self.db.refresh(item)
         return item
 
-    async def update(self, item_id: uuid.UUID, data: dict) -> PantryItem | None:
+    async def update(self, item_id: uuid.UUID, data: dict[str, Any]) -> PantryItem | None:
         item = await self.get_by_id(item_id)
         if not item:
             return None

@@ -3,12 +3,14 @@
 import uuid
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Any
 
 import structlog
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from redis.asyncio import from_url as redis_from_url
+from starlette.middleware.base import RequestResponseEndpoint
 
 from app.api.v1.routes import auth, households, items, recipes
 from app.config import settings
@@ -16,15 +18,18 @@ from app.config import settings
 # ---------------------------------------------------------------------------
 # Structlog configuration
 # ---------------------------------------------------------------------------
+_renderer: Any = (
+    structlog.dev.ConsoleRenderer()
+    if settings.environment == "development"
+    else structlog.processors.JSONRenderer()
+)
 structlog.configure(
     processors=[
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso"),
         structlog.processors.StackInfoRenderer(),
-        structlog.dev.ConsoleRenderer()
-        if settings.environment == "development"
-        else structlog.processors.JSONRenderer(),
+        _renderer,
     ],
     wrapper_class=structlog.make_filtering_bound_logger(0),
     context_class=dict,
@@ -42,7 +47,10 @@ logger = structlog.get_logger()
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting FridgeCheck API", version=settings.app_version)
     # Initialise shared Redis connection
-    app.state.redis = redis_from_url(settings.redis_url, decode_responses=True)
+    # redis-py's from_url is partially typed; cast to silence the no-untyped-call.
+    app.state.redis = redis_from_url(  # type: ignore[no-untyped-call]
+        settings.redis_url, decode_responses=True
+    )
     yield
     await app.state.redis.close()
     logger.info("Shutting down FridgeCheck API")
@@ -76,7 +84,7 @@ app.add_middleware(
 # Correlation-ID middleware
 # ---------------------------------------------------------------------------
 @app.middleware("http")
-async def add_correlation_id(request: Request, call_next):  # type: ignore[no-untyped-def]
+async def add_correlation_id(request: Request, call_next: RequestResponseEndpoint) -> Response:
     correlation_id = request.headers.get("X-Correlation-ID", str(uuid.uuid4()))
     request.state.correlation_id = correlation_id
     structlog.contextvars.bind_contextvars(correlation_id=correlation_id)
@@ -90,7 +98,7 @@ async def add_correlation_id(request: Request, call_next):  # type: ignore[no-un
 # Rate-limiting middleware (sliding window via Redis)
 # ---------------------------------------------------------------------------
 @app.middleware("http")
-async def rate_limit(request: Request, call_next):  # type: ignore[no-untyped-def]
+async def rate_limit(request: Request, call_next: RequestResponseEndpoint) -> Response:
     # Skip rate limiting for health checks and docs
     if request.url.path in ("/health", "/api/docs", "/api/redoc", "/api/openapi.json"):
         return await call_next(request)
@@ -132,8 +140,8 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 # Health check
 # ---------------------------------------------------------------------------
 @app.get("/health")
-async def health_check(request: Request) -> dict:
-    health: dict = {"status": "healthy", "version": settings.app_version}
+async def health_check(request: Request) -> JSONResponse:
+    health: dict[str, Any] = {"status": "healthy", "version": settings.app_version}
 
     # Check Redis
     try:

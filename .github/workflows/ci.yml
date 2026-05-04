@@ -29,7 +29,6 @@ jobs:
         run: ruff format --check backend/
       - name: mypy type check
         run: mypy backend/app/
-        continue-on-error: true
 
   lint-frontend:
     name: Lint Frontend

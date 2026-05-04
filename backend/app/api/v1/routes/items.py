@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.dependencies import get_current_user, require_household_member
 from app.database import get_db
+from app.models.household import HouseholdMember
 from app.models.user import User
 from app.schemas.item import ItemCreate, ItemResponse, ItemsGroupedResponse, ItemUpdate
 from app.services.item_service import ItemService
@@ -17,7 +18,7 @@ router = APIRouter(prefix="/households/{household_id}/items", tags=["items"])
 @router.get("", response_model=ItemsGroupedResponse)
 async def list_items(
     household_id: uuid.UUID,
-    _member=Depends(require_household_member),
+    _member: HouseholdMember = Depends(require_household_member),
     db: AsyncSession = Depends(get_db),
 ) -> ItemsGroupedResponse:
     item_service = ItemService(db)
@@ -40,7 +41,7 @@ async def add_item(
     household_id: uuid.UUID,
     body: ItemCreate,
     current_user: User = Depends(get_current_user),
-    _member=Depends(require_household_member),
+    _member: HouseholdMember = Depends(require_household_member),
     db: AsyncSession = Depends(get_db),
 ) -> ItemResponse:
     item_service = ItemService(db)
@@ -51,7 +52,7 @@ async def add_item(
 async def expiring_items(
     household_id: uuid.UUID,
     days: int = 3,
-    _member=Depends(require_household_member),
+    _member: HouseholdMember = Depends(require_household_member),
     db: AsyncSession = Depends(get_db),
 ) -> list[ItemResponse]:
     item_service = ItemService(db)
@@ -62,7 +63,7 @@ async def expiring_items(
 async def get_item(
     household_id: uuid.UUID,
     item_id: uuid.UUID,
-    _member=Depends(require_household_member),
+    _member: HouseholdMember = Depends(require_household_member),
     db: AsyncSession = Depends(get_db),
 ) -> ItemResponse:
     item_service = ItemService(db)
@@ -77,7 +78,7 @@ async def update_item(
     household_id: uuid.UUID,
     item_id: uuid.UUID,
     body: ItemUpdate,
-    _member=Depends(require_household_member),
+    _member: HouseholdMember = Depends(require_household_member),
     db: AsyncSession = Depends(get_db),
 ) -> ItemResponse:
     item_service = ItemService(db)
@@ -91,7 +92,7 @@ async def update_item(
 async def delete_item(
     household_id: uuid.UUID,
     item_id: uuid.UUID,
-    _member=Depends(require_household_member),
+    _member: HouseholdMember = Depends(require_household_member),
     db: AsyncSession = Depends(get_db),
 ) -> None:
     item_service = ItemService(db)
