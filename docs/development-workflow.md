@@ -98,11 +98,11 @@ Don't share state across tests, don't `commit()` — let the per-test setup hand
 
 ```bash
 docker compose exec frontend npm test               # watch mode
-docker compose exec frontend npm test -- --run      # single run (CI uses --passWithNoTests)
-docker compose exec frontend npm run test:coverage  # coverage report
+docker compose exec frontend npm run test:run       # single run (used by CI)
+docker compose exec frontend npm run test:coverage  # coverage report (text + lcov + html)
 ```
 
-`src/test-setup.ts` wires `@testing-library/jest-dom` matchers. There are very few component tests today — TODO(verify) what coverage the team is aiming for; CI uses `--passWithNoTests` so it doesn't fail when the suite is empty.
+`src/test-setup.ts` wires `@testing-library/jest-dom` matchers. CI runs `npm run test:coverage` and uploads the `frontend/coverage/` artefact. Coverage thresholds are not yet enforced — bump them in [`frontend/vitest.config.ts`](../frontend/vitest.config.ts) once the suite has more breadth.
 
 ### End-to-end smoke
 

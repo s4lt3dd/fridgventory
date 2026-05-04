@@ -158,8 +158,14 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Install dependencies
         run: cd frontend && npm ci
-      - name: Run tests
-        run: cd frontend && npm test -- --run --passWithNoTests
+      - name: Run tests with coverage
+        run: cd frontend && npm run test:coverage
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
 
   build-images:
     name: Build Docker Images
