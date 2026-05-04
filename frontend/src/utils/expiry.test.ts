@@ -44,7 +44,7 @@ describe("getUrgency", () => {
 
 describe("getDaysRemaining", () => {
   it("returns positive integers for future dates", () => {
-    expect(getDaysRemaining("2026-05-09")).toBe(999); // INTENTIONAL BREAK — verifying CI catches it
+    expect(getDaysRemaining("2026-05-09")).toBe(5);
   });
 
   it("returns 0 for today", () => {
